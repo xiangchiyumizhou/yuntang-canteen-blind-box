@@ -1,0 +1,3976 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ff7a45" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#15110f" media="(prefers-color-scheme: dark)">
+<title>食堂盲盒 · 今天吃什么</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='9' fill='%23ff7a45'/><rect x='10.5' y='10.5' width='11' height='11' rx='2.5' fill='%23fff' transform='rotate(45 16 16)'/></svg>">
+<style>
+:root{
+  color-scheme:light;
+  --brand:#ff7a45;
+  --brand-dark:#ef5f26;
+  --brand-soft:#fff0e8;
+  --green:#2bb673;
+  --bg:#fff9f2;
+  --card:#ffffff;
+  --text:#2b2118;
+  --muted:#8f7d6b;
+  --line:#f1e5d8;
+  --shadow:0 10px 30px rgba(186,126,82,.13);
+  --shadow-sm:0 4px 14px rgba(186,126,82,.10);
+  --radius:20px;
+  --ease:cubic-bezier(.22,1,.36,1);
+  --chip-bg:#ffffff;
+  --chip-hover:#fffdfb;
+  --panel-2:#fdf6ef;
+  --switch-bg:#e7dbd0;
+  --topbar-bg:rgba(255,249,242,.9);
+  --last-bg:linear-gradient(135deg,#fff4ec,#fff);
+  --last-border:#ffe0cd;
+  --ghost-bg:#f2e7dc;
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none !important}
+html,body{margin:0;padding:0}
+body{
+  font-family:system-ui,-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  background:transparent;
+  color:var(--text);
+  font-size:15px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+body::before{
+  content:"";
+  position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(620px 420px at 88% -12%, rgba(255,122,69,.20), transparent 70%),
+    radial-gradient(520px 340px at -12% 18%, rgba(43,182,115,.13), transparent 70%);
+}
+button{font-family:inherit}
+h1,h2,h3,p{margin:0}
+
+.topbar{
+  position:sticky;top:0;z-index:30;
+  display:flex;align-items:center;justify-content:space-between;
+  max-width:1180px;margin:0 auto;padding:14px 26px 10px;
+  background:var(--topbar-bg);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-mark{
+  width:34px;height:34px;border-radius:11px;flex:none;
+  background:linear-gradient(140deg,#ffa06b,#ff5f26);
+  box-shadow:0 6px 16px rgba(255,95,38,.34);
+  position:relative;
+}
+.brand-mark::after{
+  content:"";position:absolute;left:50%;top:50%;width:12px;height:12px;
+  transform:translate(-50%,-50%) rotate(45deg);
+  border-radius:3px;background:#fff;opacity:.92;
+}
+.brand-title{font-size:17px;font-weight:800;letter-spacing:.3px}
+.brand-sub{font-size:11px;color:var(--muted);margin-top:-2px}
+
+.topbar-actions{display:flex;gap:8px}
+.icon-btn{
+  border:1px solid var(--line);background:var(--chip-bg);color:var(--text);
+  padding:7px 12px;border-radius:999px;font-size:13px;cursor:pointer;
+  box-shadow:var(--shadow-sm);transition:transform .16s var(--ease),background .16s;
+}
+.icon-btn:hover{background:var(--brand-soft)}
+.icon-btn:active{transform:scale(.95)}
+
+/* ---------- 像素风背景 ---------- */
+.pixel-bg{position:fixed;inset:0;z-index:-2;background:#ffd9a4;overflow:hidden}
+.pixel-bg svg{display:block;width:100%;height:100%;image-rendering:pixelated}
+.pixel-bg::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,247,236,.26),rgba(255,240,224,.52));
+}
+
+/* ---------- 两栏骨架 ---------- */
+.shell{
+  max-width:1180px;margin:0 auto;padding:6px 24px 70px;
+  display:grid;grid-template-columns:336px minmax(0,1fr);gap:22px;align-items:start;
+}
+.side{
+  display:flex;flex-direction:column;gap:14px;
+  transition:opacity .25s,transform .25s;
+}
+.shell.side-collapsed{grid-template-columns:0 minmax(0,1fr);gap:0}
+.shell.side-collapsed .side{opacity:0;visibility:hidden;transform:translateX(-24px);pointer-events:none}
+.board{min-width:0;display:flex;flex-direction:column;gap:14px}
+.board-head{padding:8px 4px 0}
+.eyebrow{font-size:11.5px;letter-spacing:2px;color:#9c6a44;font-weight:800}
+.board-head h1{
+  font-size:32px;line-height:1.18;font-weight:900;letter-spacing:-.6px;
+  margin-top:6px;color:#33210f;
+  text-shadow:3px 3px 0 rgba(255,255,255,.75);
+}
+.board-head h1 span{color:var(--brand-dark)}
+.board-sub{margin-top:8px;color:#7d5f47;font-size:13.5px;max-width:520px}
+
+.side-actions{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:0 4px;
+}
+.side-actions span{font-size:11px;letter-spacing:1.8px;color:#9c6a44;font-weight:800}
+.btn-collapse{
+  width:auto;height:32px;padding:0 12px;border-radius:9px;border:1px solid var(--line);
+  background:rgba(255,255,255,.8);color:var(--muted);font-size:12px;font-weight:700;
+  cursor:pointer;transition:background .18s,transform .16s;
+}
+.btn-collapse:hover{background:#fff}
+.btn-collapse:active{transform:scale(.98)}
+
+.reopen-fab{
+  position:fixed;top:78px;left:20px;z-index:35;
+  display:none;align-items:center;gap:8px;
+  padding:8px 13px;border-radius:12px;cursor:pointer;
+  border:2px solid #3b2415;background:#fffaf2;color:#3b2415;
+  font-size:12.5px;font-weight:800;
+  box-shadow:0 4px 0 rgba(59,36,21,.25);
+}
+.reopen-fab.show{display:flex}
+.reopen-fab .rf-time{font-variant-numeric:tabular-nums;font-size:14px;font-weight:900}
+.reopen-fab:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(59,36,21,.25)}
+
+/* ---------- 可折叠面板 ---------- */
+.panel{padding:0;overflow:hidden}
+.panel-head{display:flex;align-items:center;gap:10px;padding:13px 15px}
+.panel-toggle{
+  display:flex;align-items:center;gap:9px;flex:1;min-width:0;
+  background:none;border:none;padding:0;font:inherit;color:inherit;
+  font-size:15px;font-weight:800;cursor:pointer;text-align:left;
+}
+.panel-toggle .chev{
+  margin-left:auto;color:var(--muted);font-size:12px;
+  transition:transform .25s var(--ease);
+}
+.panel.collapsed .panel-toggle .chev{transform:rotate(-90deg)}
+.panel-body{
+  padding:0 15px 16px;max-height:1600px;opacity:1;overflow:hidden;
+  transition:max-height .4s var(--ease),opacity .25s,padding .3s;
+}
+.panel.collapsed .panel-body{max-height:0;opacity:0;padding-top:0;padding-bottom:0}
+
+/* ---------- 右侧卡包网格 ---------- */
+.pack-grid{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;
+  padding:4px 4px 8px;
+}
+.pack-pick{
+  --pk1:#ffc48c;--pk2:#ff9a5f;--pk3:#f4742c;--zigzag:polygon(0 0,100% 0,100% 100%,0 100%);
+  position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:5px;aspect-ratio:3/3.8;padding:38px 10px 14px;
+  border:3px solid #3b2415;border-radius:9px;
+  background-color:var(--pk2);
+  background-image:
+    radial-gradient(rgba(255,255,255,.16) 1px,transparent 1.6px),
+    linear-gradient(160deg,var(--pk1),var(--pk2) 46%,var(--pk3));
+  background-size:7px 7px,auto;
+  box-shadow:0 6px 0 rgba(59,36,21,.32),0 14px 26px rgba(80,45,20,.18);
+  cursor:pointer;color:#fff;font-family:inherit;overflow:hidden;
+  transition:transform .16s var(--ease),box-shadow .2s;
+}
+.pack-pick:hover{transform:translateY(-5px);box-shadow:0 11px 0 rgba(59,36,21,.32),0 20px 32px rgba(80,45,20,.22)}
+.pack-pick:active{transform:translateY(1px);box-shadow:0 3px 0 rgba(59,36,21,.32)}
+.pack-pick::before{
+  content:"";position:absolute;left:0;right:0;top:0;height:30px;
+  background:linear-gradient(180deg,#fff3e0,var(--pk1));
+  border-bottom:2px solid rgba(59,36,21,.28);
+  clip-path:var(--zigzag);
+}
+.pack-pick::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(115deg,rgba(255,255,255,.42) 0 12%,transparent 32% 68%,rgba(255,255,255,.18));
+  mix-blend-mode:screen;
+}
+.pack-pick:focus-visible{outline:3px solid var(--brand);outline-offset:3px}
+.pp-tear{
+  position:absolute;top:9px;left:50%;transform:translateX(-50%);
+  font-size:9px;letter-spacing:2.4px;font-weight:900;color:#3b2415;opacity:.7;
+}
+.pp-star{width:46px;height:46px;margin-bottom:4px;filter:drop-shadow(0 2px 0 rgba(59,36,21,.28))}
+.pp-name{font-size:13.5px;font-weight:900;letter-spacing:.4px;text-shadow:0 2px 0 rgba(59,36,21,.25)}
+.pp-meta{font-size:10px;color:rgba(255,255,255,.86);letter-spacing:.2px}
+.pp-no{
+  position:absolute;right:9px;bottom:8px;font-size:9.5px;font-weight:900;
+  color:rgba(59,36,21,.5);letter-spacing:1px;
+}
+.board .last-result{margin-bottom:0}
+.board .selected-strip{padding:0 2px}
+#drawFeedback{
+  background:#fffdf8;border:1px solid var(--last-border);border-radius:14px;
+  padding:12px 14px;box-shadow:var(--shadow-sm);
+}
+#drawFeedback .hint-line{margin:0 0 8px}
+
+/* ---------- 响应式 ---------- */
+@media (max-width:980px){
+  .shell{grid-template-columns:1fr;padding:6px 18px 60px;gap:16px}
+  .side{position:static}
+  .shell.side-collapsed{grid-template-columns:1fr;gap:0}
+  .board-head h1{font-size:27px}
+  .pack-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+  .reopen-fab{top:70px;left:16px}
+}
+@media (min-width:981px) and (max-width:1240px){
+  .pack-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+
+.timecard{
+  display:flex;align-items:center;gap:14px;
+  background:linear-gradient(135deg,#fff8f1,#fff);
+  border:1px solid var(--last-border);border-radius:16px;
+  padding:12px 15px;margin-bottom:14px;box-shadow:var(--shadow-sm);
+}
+.timecard-clock{display:flex;flex-direction:column;flex:none;min-width:76px}
+.timecard-clock span{
+  font-size:24px;font-weight:900;letter-spacing:-.6px;line-height:1.1;
+  font-variant-numeric:tabular-nums;color:var(--text);
+}
+.timecard-clock small{font-size:10.5px;color:var(--muted);margin-top:2px;white-space:nowrap}
+.timecard-info{flex:1;min-width:0}
+.timecard-main{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.timecard-main b{font-size:12.5px;font-weight:800;color:var(--green)}
+.timecard.is-closed .timecard-main b{color:var(--muted)}
+.timecard-next{font-size:11.5px;color:var(--muted)}
+.timecard-sub{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.45}
+.time-dot{
+  width:7px;height:7px;border-radius:50%;flex:none;
+  background:#cbbfb2;transition:background .2s,box-shadow .2s;
+}
+.time-dot.on{background:var(--green);box-shadow:0 0 0 4px rgba(43,182,115,.14)}
+.reveal-status{
+  display:flex;justify-content:center;margin:9px 0 2px;
+  font-size:11.5px;font-weight:700;color:var(--muted);
+}
+.reveal-status.is-open{color:var(--green)}
+
+.card{
+  background:var(--card);border-radius:var(--radius);
+  padding:16px;margin-bottom:14px;
+  box-shadow:var(--shadow);border:1px solid rgba(255,255,255,.8);
+}
+.card-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:12px}
+.card-title{font-size:15.5px;font-weight:800;display:flex;align-items:center;gap:8px}
+.step-badge{
+  width:22px;height:22px;border-radius:8px;flex:none;
+  background:var(--brand-soft);color:var(--brand-dark);
+  font-size:12px;font-weight:800;display:grid;place-items:center;
+}
+.card-tip{font-size:12px;color:var(--muted)}
+
+.locate-row{display:flex;gap:8px;margin:10px 0 8px}
+.btn-locate{
+  flex:1;height:42px;border-radius:13px;border:1px dashed #ffb894;
+  background:var(--brand-soft);color:var(--brand-dark);
+  font-size:14px;font-weight:700;cursor:pointer;
+  transition:transform .16s var(--ease),opacity .2s;
+}
+.btn-locate:active{transform:scale(.97)}
+.btn-locate:disabled{opacity:.5;cursor:not-allowed}
+.btn-locate.loading{opacity:.75}
+
+.hint-line{
+  font-size:12.5px;color:var(--muted);
+  background:var(--panel-2);border-radius:11px;padding:8px 11px;margin-top:10px;
+  line-height:1.5;
+}
+
+.radio-group{display:flex;flex-direction:column;gap:8px}
+.radio-item{
+  display:flex;align-items:center;gap:11px;
+  border:1px solid var(--line);border-radius:14px;padding:11px 13px;
+  cursor:pointer;transition:border-color .18s,background .18s,box-shadow .18s;
+  background:var(--chip-bg);
+}
+.radio-item:hover{background:var(--chip-hover)}
+.radio-item input{position:absolute;opacity:0;pointer-events:none}
+.radio-dot{
+  width:19px;height:19px;border-radius:50%;flex:none;
+  border:2px solid var(--switch-bg);display:grid;place-items:center;
+  transition:border-color .18s;
+}
+.radio-dot::after{
+  content:"";width:9px;height:9px;border-radius:50%;
+  background:var(--brand);transform:scale(0);transition:transform .2s var(--ease);
+}
+.radio-item:has(input:checked){
+  border-color:var(--brand);
+  background:linear-gradient(0deg, rgba(255,122,69,.06), rgba(255,122,69,.06));
+  box-shadow:0 0 0 3px rgba(255,122,69,.10);
+}
+.radio-item:has(input:checked) .radio-dot{border-color:var(--brand)}
+.radio-item:has(input:checked) .radio-dot::after{transform:scale(1)}
+.radio-item:has(input:disabled){opacity:.5;cursor:not-allowed}
+.radio-body{display:flex;flex-direction:column;gap:1px;min-width:0}
+.radio-label{font-size:14px;font-weight:600}
+.radio-meta{font-size:11.5px;color:var(--muted)}
+
+.filter-block{margin-bottom:15px}
+.filter-block:last-child{margin-bottom:0}
+.filter-label{
+  font-size:12.5px;font-weight:700;color:var(--muted);
+  margin-bottom:8px;display:flex;align-items:center;gap:6px;
+}
+.filter-label em{font-style:normal;font-weight:400;font-size:11px;color:#b3a293}
+.chip-row{display:flex;flex-wrap:wrap;gap:8px}
+.chip{
+  border:1px solid var(--line);background:var(--chip-bg);color:var(--text);
+  padding:7px 13px;border-radius:999px;font-size:13.5px;cursor:pointer;
+  transition:transform .16s var(--ease),background .18s,border-color .18s,color .18s,box-shadow .18s;
+  min-height:34px;display:inline-flex;align-items:center;
+}
+.chip:hover{border-color:#ffc4a4}
+.chip:active{transform:scale(.94)}
+.chip[aria-pressed="true"]{
+  background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600;
+  box-shadow:0 6px 14px rgba(255,122,69,.28);
+}
+.chip[aria-pressed="true"][data-tone="green"]{
+  background:var(--green);border-color:var(--green);
+  box-shadow:0 6px 14px rgba(43,182,115,.26);
+}
+.chip[aria-pressed="true"][data-tone="dark"]{
+  background:#3d2f24;border-color:#3d2f24;
+  box-shadow:0 6px 14px rgba(61,47,36,.24);
+}
+.chip[aria-pressed="true"][data-tone="red"]{
+  background:#e2574c;border-color:#e2574c;
+  box-shadow:0 6px 14px rgba(226,87,76,.26);
+}
+
+.switch-list{display:flex;flex-direction:column;gap:2px;border-top:1px dashed var(--line);padding-top:12px;margin-top:2px}
+.switch-row{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:7px 2px;cursor:pointer;font-size:13.5px;
+}
+.switch-row small{display:block;font-size:11px;color:var(--muted);font-weight:400}
+.switch{position:relative;width:44px;height:25px;flex:none}
+.switch input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer;z-index:2}
+.switch span{
+  position:absolute;inset:0;border-radius:999px;background:var(--switch-bg);
+  transition:background .2s;
+}
+.switch span::after{
+  content:"";position:absolute;left:3px;top:3px;width:19px;height:19px;border-radius:50%;
+  background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);
+  transition:transform .22s var(--ease);
+}
+.switch input:checked + span{background:var(--brand)}
+.switch input:checked + span::after{transform:translateX(19px)}
+
+.last-result{
+  display:flex;align-items:center;gap:12px;
+  background:var(--last-bg);
+  border:1px solid var(--last-border);border-radius:16px;
+  padding:12px 14px;margin-bottom:14px;cursor:pointer;
+  box-shadow:var(--shadow-sm);transition:transform .16s var(--ease);
+}
+.last-result:active{transform:scale(.985)}
+.last-result .lr-avatar{
+  width:44px;height:44px;border-radius:13px;flex:none;
+  background:linear-gradient(140deg,#ffe0cd,#ffc7a8);
+  display:grid;place-items:center;
+  font-size:16px;font-weight:900;color:#c2500f;
+}
+.last-result .lr-label{font-size:11px;color:var(--muted);font-weight:600}
+.last-result .lr-name{font-size:14.5px;font-weight:800}
+.last-result .lr-meta{font-size:11.5px;color:var(--muted)}
+.last-result .lr-go{margin-left:auto;font-size:12px;color:var(--brand-dark);font-weight:700}
+
+/* ---------- overlay ---------- */
+.overlay{
+  position:fixed;inset:0;z-index:60;display:block;
+  padding:64px 22px 30px;overflow-y:auto;overflow-x:hidden;
+  background:radial-gradient(700px 500px at 50% 15%, rgba(255,122,69,.24), transparent 65%), rgba(32,23,16,.965);
+  -webkit-backdrop-filter:blur(14px);
+  backdrop-filter:blur(14px);
+  opacity:0;visibility:hidden;transition:opacity .3s ease,visibility .3s;
+  --pk1:#ffa872;--pk2:#ff7a45;--pk3:#ef5f26;
+  --pk-strip1:#ffc08c;--pk-strip2:#ff955f;--pk-strip3:#f2682c;
+  --pk-side1:#d9551c;--pk-side2:#b03a0c;
+  --pk-back1:#e6541c;--pk-back2:#c84413;--pk-back3:#a8360c;
+  --pk-scrap1:#ffb27a;--pk-scrap2:#f2682c;
+  --pk-shade:rgba(122,40,4,.26);
+}
+.overlay.show{opacity:1;visibility:visible}
+.overlay-inner{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:18px;
+  min-height:calc(100vh - 94px);
+  min-height:calc(100dvh - 94px);
+}
+.overlay-close{
+  position:absolute;top:calc(16px + env(safe-area-inset-top));right:18px;
+  width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.24);
+  background:rgba(255,255,255,.1);color:#fff;font-size:19px;line-height:1;
+  cursor:pointer;transition:background .2s;
+}
+.overlay-close:hover{background:rgba(255,255,255,.2)}
+.skip-btn{
+  position:absolute;top:calc(20px + env(safe-area-inset-top));left:18px;
+  background:none;border:none;color:rgba(255,255,255,.55);font-size:12.5px;
+  cursor:pointer;padding:6px;letter-spacing:.5px;
+  transition:opacity .25s,color .2s;
+}
+.skip-btn:hover{color:#fff}
+
+/* ---------- 3D 卡包 ---------- */
+.pack-stage{
+  width:min(66vw,264px);height:min(92vw,360px);
+  position:relative;flex:none;display:flex;align-items:center;justify-content:center;
+  perspective:1100px;perspective-origin:50% 42%;
+  transition:height .55s var(--ease);
+  user-select:none;-webkit-user-select:none;
+}
+.pack-float{
+  width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+  animation:packFloat 6s ease-in-out infinite;
+  filter:drop-shadow(0 26px 22px rgba(0,0,0,.42));
+}
+@keyframes packFloat{
+  0%,100%{transform:translateY(0) rotate(-1.1deg)}
+  50%{transform:translateY(-9px) rotate(1.1deg)}
+}
+.pack{
+  position:relative;width:100%;aspect-ratio:264/360;
+  transform-style:preserve-3d;
+  transform:rotateX(-7deg) rotateY(12deg);
+  will-change:transform;touch-action:none;cursor:grab;
+}
+.pack.grabbing{cursor:grabbing}
+.pack-body{position:absolute;inset:0;transform-style:preserve-3d}
+.pack-face{
+  position:absolute;inset:0;border-radius:16px 16px 13px 13px;
+  backface-visibility:hidden;overflow:hidden;
+}
+.pack-front{
+  transform:translateZ(13px);
+  background:
+    linear-gradient(112deg,rgba(255,255,255,.5) 0 7%,transparent 18% 46%,rgba(255,255,255,.24) 52%,transparent 66% 100%),
+    linear-gradient(158deg,var(--pk1),var(--pk2) 42%,var(--pk3));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.35),inset 0 -34px 46px var(--pk-shade);
+}
+.pack-front::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='140' height='140' filter='url(%23n)'/></svg>");
+  background-size:140px 140px;opacity:.16;mix-blend-mode:overlay;
+}
+.pack-back{
+  transform:rotateY(180deg) translateZ(13px);
+  background:linear-gradient(158deg,var(--pk-back1),var(--pk-back2) 60%,var(--pk-back3));
+}
+.pack-back::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='140' height='140' filter='url(%23n)'/></svg>");
+  background-size:140px 140px;opacity:.12;mix-blend-mode:overlay;
+}
+.pack-back-print{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:8px;text-align:center;
+  color:rgba(255,255,255,.86);
+}
+.pb-title{font-size:12px;letter-spacing:3px;font-weight:800}
+.pb-sub{font-size:11px;color:rgba(255,255,255,.55)}
+.pb-mark{font-size:34px;opacity:.35}
+.pack-side{
+  position:absolute;top:2px;bottom:2px;width:26px;
+  background:linear-gradient(180deg,var(--pk-side1),var(--pk-side2));
+}
+.pack-side-l{left:-13px;transform:rotateY(-90deg);transform-origin:100% 50%}
+.pack-side-r{right:-13px;transform:rotateY(90deg);transform-origin:0 50%}
+.pack-strip{
+  position:absolute;left:0;right:0;top:0;height:46px;
+  transform:translate3d(0,0,19px);transform-origin:50% 100%;
+  background:linear-gradient(180deg,var(--pk-strip1),var(--pk-strip2) 55%,var(--pk-strip3));
+  border-radius:16px 16px 0 0;
+  box-shadow:0 3px 0 rgba(60,30,10,.22),inset 0 1px 0 rgba(255,255,255,.55),inset 0 -14px 18px rgba(90,40,10,.16);
+  cursor:grab;touch-action:none;backface-visibility:hidden;
+  will-change:transform,opacity;
+}
+.pack-strip::after{
+  content:"";position:absolute;left:0;right:0;bottom:0;height:3px;
+  background:repeating-linear-gradient(90deg,rgba(60,30,10,.35) 0 5px,transparent 5px 10px);
+  opacity:.7;
+}
+.pack-strip.gone{opacity:0;pointer-events:none}
+.strip-tear{
+  position:absolute;left:50%;top:15px;transform:translateX(-50%);
+  font-size:9.5px;letter-spacing:2.4px;font-weight:800;
+  color:rgba(255,255,255,.92);white-space:nowrap;
+  text-shadow:0 1px 2px rgba(80,35,10,.3);
+}
+.strip-arrows{
+  position:absolute;left:50%;top:26px;transform:translateX(-50%);
+  font-size:10px;letter-spacing:7px;color:rgba(255,255,255,.66);
+}
+.pack-print{
+  position:absolute;inset:46px 0 0;padding:18px 20px 18px;
+  display:flex;flex-direction:column;align-items:center;
+  pointer-events:none;
+}
+.pack-brand{font-size:25px;font-weight:900;color:#fff;letter-spacing:1px;text-shadow:0 2px 6px rgba(70,30,10,.25)}
+.pack-sub{font-size:8.5px;letter-spacing:3px;color:rgba(255,255,255,.72);margin-top:1px}
+.holo-star{width:min(50%,140px);margin:18px 0 auto;filter:drop-shadow(0 6px 14px rgba(70,30,10,.25))}
+.pack-foot{
+  width:100%;display:flex;justify-content:space-between;
+  font-size:9px;letter-spacing:.8px;color:rgba(255,255,255,.7);
+}
+.pack-mouth{
+  position:absolute;left:0;right:0;top:40px;height:34px;
+  transform:translateZ(15px);opacity:0;pointer-events:none;
+  transition:opacity .2s;
+}
+.pack-mouth.open{opacity:1}
+.pack-gap{
+  position:absolute;inset:0;
+  background:linear-gradient(180deg,#3b1707,rgba(59,23,7,.7) 45%,rgba(59,23,7,0));
+  box-shadow:inset 0 8px 12px rgba(0,0,0,.55);
+}
+.tear-svg{position:absolute;left:0;right:0;top:-7px;width:100%;height:28px;overflow:visible}
+#tearBase{fill:none;stroke:#4a1d07;stroke-width:4.2;stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:100}
+#tearHi{fill:none;stroke:rgba(255,224,200,.5);stroke-width:1.4;stroke-dasharray:100;stroke-dashoffset:100;transform:translateY(-2.4px)}
+.pack-cards{
+  position:absolute;left:15px;right:15px;top:40px;bottom:16px;
+  transform-style:preserve-3d;
+}
+.pack-card{
+  position:absolute;inset:0;transform-style:preserve-3d;
+  transform:translate3d(0,0,2px) rotateY(180deg);
+  transition:transform 1.05s cubic-bezier(.2,.9,.2,1);
+}
+.pack.teared .pack-card{transform:translate3d(0,-30%,38px) rotateY(0deg)}
+.pack.instant .pack-card{transition:none}
+.pc-inner{position:absolute;inset:0;transform-style:preserve-3d}
+.pc-face{position:absolute;inset:0;border-radius:12px;backface-visibility:hidden;overflow:hidden}
+.pc-front{
+  transform:rotateY(0deg);
+  background:linear-gradient(160deg,#fffaf3,#ffe6d2);
+  box-shadow:inset 0 0 0 1px #fff,0 10px 24px rgba(60,20,0,.28);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:6px;padding:16px 14px;text-align:center;
+}
+.pc-front::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(115deg,rgba(255,255,255,.85),transparent 42%,rgba(255,214,180,.35));
+  mix-blend-mode:screen;
+}
+.pc-kicker{font-size:10px;letter-spacing:2.6px;color:#c66a37;font-weight:800}
+.pc-name{
+  font-size:18px;font-weight:900;color:#3b2415;line-height:1.3;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+}
+.pc-meta{
+  font-size:9.5px;color:#8f6a51;line-height:1.4;max-width:100%;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.pc-star{font-size:20px;color:#f08a4b;opacity:.55;margin-top:4px}
+.pc-back{
+  transform:rotateY(180deg);
+  background:
+    repeating-linear-gradient(45deg,rgba(255,255,255,.06) 0 6px,transparent 6px 12px),
+    linear-gradient(160deg,#b8430f,#8f2f08);
+  display:grid;place-items:center;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.2);
+}
+.pc-back span{font-size:42px;color:rgba(255,255,255,.3);font-weight:900}
+.pack-stage.teared{height:266px}
+.pack-stage.teared .pack-float{animation:none;transform:scale(.66) translateY(-10px);transition:transform .6s var(--ease)}
+.pack-hint{
+  position:absolute;left:50%;bottom:-26px;transform:translateX(-50%);
+  width:max-content;max-width:min(90vw,320px);text-align:center;
+  font-size:11.5px;color:rgba(255,255,255,.55);letter-spacing:.4px;
+  transition:color .2s,opacity .3s;
+}
+.pack-hint.pulse{animation:hintPulse 2.4s ease-in-out infinite}
+@keyframes hintPulse{0%,100%{opacity:.6}50%{opacity:1}}
+.pack-scrap{
+  position:absolute;left:50%;bottom:-6px;width:min(50vw,182px);height:32px;
+  transform:translate(-50%,16px) rotate(-8deg) scale(.9);opacity:0;
+  background:linear-gradient(180deg,var(--pk-scrap1),var(--pk-scrap2));
+  box-shadow:0 8px 18px rgba(0,0,0,.32);
+  transition:opacity .45s,transform .7s var(--ease);
+  pointer-events:none;
+}
+.pack-scrap.show{opacity:.85;transform:translate(-50%,0) rotate(-7deg) scale(1)}
+.pack-stage.teared .pack-hint{opacity:0}
+
+@media (prefers-reduced-motion: reduce){
+  .pack-float{animation:none}
+  .pack-card{transition:none}
+}
+
+/* ---------- 结果面板 ---------- */
+.reveal{
+  width:min(88vw,380px);
+  display:none;flex-direction:column;gap:14px;
+  pointer-events:none;
+}
+.reveal.show{display:flex;pointer-events:auto;animation:revealIn .4s var(--ease) both}
+@keyframes revealIn{
+  from{opacity:0;transform:translateY(18px)}
+  to{opacity:1;transform:none}
+}
+.reveal-kicker{
+  color:rgba(255,255,255,.55);font-size:12px;letter-spacing:2px;text-align:center;
+}
+.reveal-name{
+  color:#fff;font-size:27px;font-weight:900;text-align:center;line-height:1.2;
+  letter-spacing:-.4px;
+}
+.reveal-meta{
+  color:rgba(255,255,255,.72);font-size:13px;text-align:center;margin-top:-4px;
+}
+.reveal-tags{display:flex;flex-wrap:wrap;gap:7px;justify-content:center}
+.reveal-tags span{
+  font-size:11.5px;color:#ffd9c5;border:1px solid rgba(255,169,124,.4);
+  background:rgba(255,122,69,.14);padding:4px 10px;border-radius:999px;
+}
+.reveal-reason{
+  background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.14);
+  border-radius:14px;padding:12px 14px;color:rgba(255,255,255,.86);
+  font-size:13px;line-height:1.6;
+}
+.reveal-reason b{color:#ffb894;font-weight:700}
+.reveal-actions{display:flex;flex-direction:column;gap:9px}
+.reveal-actions .row{display:flex;gap:9px}
+.btn-ghost{
+  flex:1;height:46px;border-radius:13px;cursor:pointer;font-size:14px;font-weight:700;
+  background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);color:#fff;
+  transition:background .2s,transform .16s var(--ease);
+}
+.btn-ghost:hover{background:rgba(255,255,255,.18)}
+.btn-ghost:active{transform:scale(.97)}
+.btn-accept{
+  width:100%;height:52px;border-radius:15px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,#ff955f,#ff5f26);color:#fff;
+  font-size:16.5px;font-weight:800;
+  box-shadow:0 12px 26px rgba(255,95,38,.4);
+  transition:transform .16s var(--ease);
+}
+.btn-accept:active{transform:scale(.975)}
+
+.selected-strip{
+  display:flex;gap:6px;overflow-x:auto;padding:0 2px 8px;
+  scrollbar-width:none;-ms-overflow-style:none;
+}
+.selected-strip::-webkit-scrollbar{display:none}
+.sel-tag{
+  flex:none;font-size:11.5px;padding:4px 9px;border-radius:999px;
+  background:var(--chip-bg);border:1px solid var(--line);color:var(--muted);
+  display:inline-flex;align-items:center;gap:4px;box-shadow:var(--shadow-sm);
+}
+.sel-tag b{font-weight:700;color:var(--brand-dark)}
+.sel-tag[data-clear]{cursor:pointer;transition:transform .16s var(--ease)}
+.sel-tag[data-clear]:active{transform:scale(.96)}
+.sel-tag .sel-x{font-style:normal;opacity:.45;font-size:12px;margin-left:1px}
+
+/* ---------- drawers ---------- */
+.drawer-mask{
+  position:fixed;inset:0;background:rgba(38,28,20,.45);z-index:70;
+  opacity:0;visibility:hidden;transition:.26s;
+}
+.drawer-mask.show{opacity:1;visibility:visible}
+.drawer{
+  position:fixed;left:0;right:0;bottom:0;z-index:80;
+  max-width:560px;margin:0 auto;max-height:82vh;
+  background:var(--bg);border-radius:24px 24px 0 0;
+  transform:translateY(102%);transition:transform .34s var(--ease);
+  display:flex;flex-direction:column;
+  box-shadow:0 -14px 40px rgba(0,0,0,.18);
+}
+.drawer.show{transform:translateY(0)}
+.drawer-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px 10px;flex:none;
+}
+.drawer-title{font-size:17px;font-weight:800}
+.drawer-close{
+  width:34px;height:34px;border-radius:50%;border:none;background:var(--ghost-bg);
+  color:var(--muted);font-size:17px;cursor:pointer;
+}
+.drawer-body{padding:4px 20px calc(24px + env(safe-area-inset-bottom));overflow-y:auto}
+
+.history-item{
+  display:flex;gap:12px;padding:12px 0;border-bottom:1px dashed var(--line);
+}
+.history-item:last-child{border-bottom:none}
+.hi-time{font-size:11px;color:var(--muted);flex:none;width:78px;padding-top:2px}
+.hi-name{font-size:14px;font-weight:700}
+.hi-meta{font-size:11.5px;color:var(--muted)}
+.empty{
+  text-align:center;color:var(--muted);font-size:13px;padding:38px 0;
+}
+
+.setting-row{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:13px 0;border-bottom:1px dashed var(--line);
+}
+.setting-row .st-title{font-size:14px;font-weight:600}
+.setting-row .st-desc{font-size:11.5px;color:var(--muted);margin-top:2px}
+.btn-mini{
+  border:1px solid var(--line);background:var(--chip-bg);color:var(--text);
+  padding:8px 14px;border-radius:11px;font-size:13px;cursor:pointer;font-weight:600;
+}
+.btn-mini:active{transform:scale(.96)}
+.btn-mini.danger{color:#d4453a;border-color:#f7d3ce;background:#fff6f4}
+.coord-row{
+  display:flex;align-items:center;gap:9px;
+  background:var(--chip-bg);border:1px solid var(--line);border-radius:13px;
+  padding:9px 11px;
+}
+.coord-name{font-size:13px;font-weight:700;flex:none;width:56px}
+.coord-val{font-size:11.5px;color:var(--muted);flex:1;min-width:0;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.coord-row .btn-mini{padding:6px 10px;font-size:12px;flex:none}
+
+.toast{
+  position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translate(-50%,20px);
+  background:rgba(43,33,24,.94);color:#fff;font-size:13px;
+  padding:11px 18px;border-radius:999px;z-index:75;
+  opacity:0;visibility:hidden;transition:.28s var(--ease);
+  max-width:84vw;text-align:center;line-height:1.5;
+  box-shadow:0 10px 26px rgba(0,0,0,.24);
+}
+.toast.show{opacity:1;visibility:visible;transform:translate(-50%,0)}
+
+.overlay:focus,.btn-accept:focus-visible,.chip:focus-visible,.icon-btn:focus-visible,
+.btn-ghost:focus-visible,.btn-text:focus-visible,.panel-toggle:focus-visible{
+  outline:2px solid var(--brand);
+  outline-offset:2px;
+}
+.overlay:focus{outline:none}
+
+/* ---------- drawer tabs / favorites ---------- */
+.drawer-tabs{display:flex;gap:8px;padding:0 20px 10px;flex:none}
+.drawer-tab{
+  flex:1;height:38px;border-radius:11px;border:1px solid var(--line);
+  background:var(--chip-bg);color:var(--muted);font-size:13px;font-weight:700;cursor:pointer;
+  transition:background .18s,color .18s,border-color .18s;
+}
+.drawer-tab[aria-selected="true"]{background:var(--brand);border-color:var(--brand);color:#fff}
+.fav-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px dashed var(--line)}
+.fav-item:last-child{border-bottom:none}
+.fav-avatar{
+  width:40px;height:40px;border-radius:12px;flex:none;
+  background:linear-gradient(140deg,#ffe0cd,#ffc7a8);
+  display:grid;place-items:center;font-weight:900;color:#c2500f;
+}
+.fav-main{min-width:0;flex:1}
+.fav-name{font-size:14px;font-weight:700}
+.fav-meta{font-size:11.5px;color:var(--muted)}
+.fav-remove{
+  border:1px solid var(--line);background:var(--chip-bg);color:var(--muted);
+  border-radius:9px;padding:6px 10px;font-size:12px;cursor:pointer;flex:none;
+}
+.fav-remove:active{transform:scale(.95)}
+.history-filter{margin-top:4px;display:flex;flex-wrap:wrap;gap:4px}
+.history-filter span{
+  font-size:10.5px;color:var(--muted);border:1px solid var(--line);
+  border-radius:999px;padding:1px 7px;
+}
+.btn-text{
+  width:100%;height:40px;border-radius:12px;border:1px dashed rgba(255,255,255,.3);
+  background:transparent;color:rgba(255,255,255,.74);font-size:13px;cursor:pointer;
+  transition:background .2s,transform .16s var(--ease);
+}
+.btn-text:hover{background:rgba(255,255,255,.08)}
+.btn-text:active{transform:scale(.98)}
+
+/* ---------- dark theme ---------- */
+@media (prefers-color-scheme: dark){
+  :root{
+    color-scheme:dark;
+    --bg:#15110f;
+    --card:#221b17;
+    --text:#f3ece5;
+    --muted:#b09e8e;
+    --line:#3a2e26;
+    --brand-soft:#3b241a;
+    --brand-dark:#ff8d59;
+    --chip-bg:#2a211c;
+    --chip-hover:#32281f;
+    --panel-2:#241c18;
+    --switch-bg:#4b3c32;
+    --topbar-bg:rgba(21,17,15,.92);
+    --last-bg:linear-gradient(135deg,#2d211a,#221b17);
+    --last-border:#4a352a;
+    --ghost-bg:#33281f;
+    --shadow:0 10px 30px rgba(0,0,0,.5);
+    --shadow-sm:0 4px 14px rgba(0,0,0,.38);
+  }
+  body::before{opacity:.6}
+  .pixel-bg{filter:brightness(.5) saturate(.85)}
+  .pixel-bg::after{background:linear-gradient(180deg,rgba(21,17,15,.42),rgba(21,17,15,.62))}
+  .board-head h1{color:#f3ece5;text-shadow:3px 3px 0 rgba(0,0,0,.5)}
+  .board-head h1 span{color:#ffb07a}
+  .board-sub{color:#cbb6a4}
+  .eyebrow{color:#c8a17d}
+  .radio-item:has(input:checked){
+    background:linear-gradient(0deg,rgba(255,122,69,.15),rgba(255,122,69,.15));
+  }
+  .btn-mini.danger{background:#3a201d;color:#ff9b91;border-color:#5a2e29}
+  .hint-line{color:#c4b3a3}
+  .last-result .lr-avatar,.fav-avatar{color:#7a3a12}
+  .toast{background:rgba(58,46,38,.96)}
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.01ms !important;transition-duration:.01ms !important}
+}
+:root{
+  --brand:#e86f3d;
+  --brand-dark:#b84b29;
+  --brand-soft:#ffe3b5;
+  --green:#4f8b4a;
+  --card:#fffaf0;
+  --text:#443326;
+  --muted:#8a715a;
+  --line:#d7b98c;
+  --shadow:0 5px 0 rgba(79,53,33,.18),0 14px 26px rgba(79,53,33,.12);
+  --shadow-sm:0 3px 0 rgba(79,53,33,.14);
+  --radius:4px;
+  --chip-bg:#fffdf5;
+  --chip-hover:#fff3d6;
+  --panel-2:#f7ecd2;
+  --switch-bg:#c9b28e;
+  --last-border:#d7b98c;
+}
+body{
+  font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  color:var(--text);
+}
+body::before{
+  background-image:linear-gradient(rgba(255,255,255,.08) 50%,transparent 50%);
+  background-size:100% 4px;
+}
+.topbar{
+  top:12px;
+  max-width:1240px;
+  margin:12px auto 14px;
+  padding:10px 18px;
+  background:rgba(255,250,232,.94);
+  border:3px solid #5b402b;
+  border-radius:4px;
+  box-shadow:0 5px 0 rgba(74,50,31,.28);
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+}
+.brand-mark{
+  width:38px;
+  height:38px;
+  border:3px solid #5b402b;
+  border-radius:2px;
+  background:#e86f3d;
+  box-shadow:inset -5px -5px 0 #c8532f,3px 3px 0 #e8bc72;
+}
+.brand-mark::before{
+  content:"";
+  position:absolute;
+  left:8px;
+  top:8px;
+  width:16px;
+  height:12px;
+  background:#fff4d6;
+  box-shadow:3px -4px 0 -1px #fff4d6,6px 0 0 -1px #fff4d6;
+}
+.brand-mark::after{
+  width:16px;
+  height:3px;
+  border-radius:0;
+  background:#5b402b;
+  transform:translate(-50%,-50%);
+  top:25px;
+  opacity:1;
+}
+.brand-title{
+  font-size:18px;
+  font-weight:900;
+  letter-spacing:2px;
+}
+.brand-sub{
+  color:#8a715a;
+  font-family:"Courier New",monospace;
+  font-weight:700;
+  letter-spacing:1px;
+}
+.icon-btn{
+  border:2px solid #8a6b48;
+  border-radius:3px;
+  background:#fffaf0;
+  box-shadow:0 3px 0 #c8a978;
+  font-weight:700;
+}
+.icon-btn:hover{background:#ffe8b9}
+.icon-btn:active{transform:translateY(2px);box-shadow:0 1px 0 #c8a978}
+.pixel-bg{background:#b9dcd2}
+.pixel-bg::after{
+  background:linear-gradient(180deg,rgba(255,248,218,.08),rgba(255,239,199,.28));
+}
+.pixel-steam{animation:pixelSteam 3.2s steps(4,end) infinite}
+.pixel-steam.delay{animation-delay:-1.6s}
+@keyframes pixelSteam{
+  0%{transform:translateY(5px);opacity:0}
+  25%{opacity:.7}
+  75%{opacity:.45}
+  100%{transform:translateY(-9px);opacity:0}
+}
+.shell{
+  max-width:1240px;
+  grid-template-columns:320px minmax(0,1fr);
+  gap:24px;
+  padding:8px 24px 70px;
+}
+.side{gap:14px}
+.shell.side-collapsed{grid-template-columns:minmax(0,1fr);gap:0}
+.shell.side-collapsed .side{display:none}
+.board{gap:16px}
+.board-head{padding:10px 4px 2px}
+.eyebrow{
+  display:inline-block;
+  padding:3px 8px;
+  border:2px solid #5b402b;
+  background:#5b402b;
+  color:#fff1c9;
+  font-family:"Courier New",monospace;
+  font-size:11px;
+  letter-spacing:1.4px;
+  box-shadow:3px 3px 0 rgba(255,244,214,.8);
+}
+.board-head h1{
+  margin-top:12px;
+  color:#3f2d20;
+  font-size:clamp(28px,3vw,40px);
+  font-weight:900;
+  letter-spacing:1px;
+  text-shadow:3px 3px 0 #fff0c8;
+}
+.board-head h1 span{color:#b94f2d}
+.board-sub{
+  display:inline-block;
+  margin-top:10px;
+  padding:4px 7px;
+  background:rgba(255,247,218,.78);
+  color:#6d5138;
+  font-weight:600;
+  box-shadow:3px 3px 0 rgba(91,64,43,.1);
+}
+.side-actions{padding:0 2px}
+.side-actions span{
+  color:#5b402b;
+  font-family:"Courier New",monospace;
+  font-weight:900;
+}
+.btn-collapse{
+  height:32px;
+  border:2px solid #8a6b48;
+  border-radius:3px;
+  background:#fff4d6;
+  color:#6d5138;
+  box-shadow:0 3px 0 #b89563;
+}
+.btn-collapse:active{transform:translateY(2px);box-shadow:0 1px 0 #b89563}
+.reopen-fab{
+  top:94px;
+  left:24px;
+  padding:10px 14px;
+  border:3px solid #5b402b;
+  border-radius:3px;
+  background:#fff4d6;
+  box-shadow:0 5px 0 rgba(74,50,31,.3);
+}
+.reopen-fab .rf-time{
+  font-family:"Courier New",monospace;
+  font-size:18px;
+}
+.reopen-fab:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(74,50,31,.3)}
+.timecard{
+  gap:12px;
+  margin:0;
+  padding:14px;
+  border:3px solid #5b402b;
+  border-radius:4px;
+  background:#fff4d6;
+  box-shadow:0 5px 0 rgba(74,50,31,.22);
+}
+.timecard-clock{
+  min-width:92px;
+  padding-right:12px;
+  border-right:2px dashed #c8a978;
+}
+.timecard-clock span{
+  color:#3f2d20;
+  font-family:"Courier New",monospace;
+  font-size:31px;
+  letter-spacing:-2px;
+}
+.timecard-clock small{
+  color:#7c6248;
+  font-size:10px;
+  white-space:normal;
+}
+.timecard-clock .clock-date{
+  color:#b84b29;
+  font-family:"Courier New",monospace;
+  font-size:11px;
+  font-weight:900;
+}
+.timecard-main b{color:#4f8b4a}
+.timecard-sub{color:#7c6248}
+.time-dot{border-radius:0;box-shadow:none}
+.time-dot.on{border-radius:0;background:#5c984d;box-shadow:0 0 0 3px #d4e5ae}
+.card{
+  margin:0;
+  border:3px solid #6b4c32;
+  border-radius:4px;
+  background:#fffaf0;
+  box-shadow:0 5px 0 rgba(74,50,31,.2),0 12px 24px rgba(74,50,31,.1);
+}
+.panel-head{
+  padding:13px 14px;
+  border-bottom:2px dashed #d7b98c;
+  background:#fff1ce;
+}
+.panel.collapsed .panel-head{border-bottom-color:transparent}
+.panel-toggle{font-size:15px;font-weight:900}
+.step-badge{
+  width:27px;
+  height:25px;
+  border:2px solid #8a6b48;
+  border-radius:2px;
+  background:#e8bc72;
+  color:#4b3524;
+  font-family:"Courier New",monospace;
+  box-shadow:2px 2px 0 #c89b5d;
+}
+.panel-toggle .chev{color:#6b4c32}
+.panel-body{padding:14px}
+.radio-item{
+  border:2px solid #d7b98c;
+  border-radius:3px;
+  background:#fffdf5;
+}
+.radio-item:has(input:checked){
+  border-color:#b85d35;
+  background:#ffe8b9;
+  box-shadow:3px 3px 0 #e8bc72;
+}
+.radio-dot,.radio-dot::after{border-radius:0}
+.btn-locate{
+  border:2px dashed #b85d35;
+  border-radius:3px;
+  background:#ffe3b5;
+}
+.hint-line{border-radius:3px;background:#f7ecd2}
+.chip{
+  border:2px solid #d7b98c;
+  border-radius:3px;
+  background:#fffdf5;
+  box-shadow:0 2px 0 #dfc79e;
+}
+.chip[aria-pressed="true"]{box-shadow:0 3px 0 #9e4b2d}
+.switch span{border-radius:2px;border:2px solid #8a6b48}
+.switch span::after{border-radius:1px}
+.switch input:checked + span::after{transform:translateX(17px)}
+.pack-grid{
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:20px;
+  padding:8px 6px 14px;
+}
+.pack-pick{
+  grid-column:span 2;
+  aspect-ratio:3/3.9;
+  padding:42px 10px 18px;
+  border:3px solid #493322;
+  border-radius:3px;
+  background-image:
+    linear-gradient(90deg,rgba(255,255,255,.1) 50%,transparent 50%),
+    linear-gradient(160deg,var(--pk1) 0 28%,var(--pk2) 28% 70%,var(--pk3) 70%);
+  background-size:8px 8px,auto;
+  box-shadow:0 6px 0 #493322,0 10px 0 rgba(73,51,34,.16),0 18px 26px rgba(73,51,34,.15);
+}
+.pack-pick:nth-child(4){grid-column:2/span 2}
+.pack-pick:hover{
+  transform:translateY(-6px);
+  box-shadow:0 12px 0 #493322,0 16px 0 rgba(73,51,34,.14),0 24px 30px rgba(73,51,34,.18);
+}
+.pack-pick:active{
+  transform:translateY(4px);
+  box-shadow:0 2px 0 #493322,0 5px 0 rgba(73,51,34,.16);
+}
+.pack-pick::before{
+  height:32px;
+  border-bottom:3px solid #493322;
+  background:linear-gradient(180deg,#fff4d6 0 50%,var(--pk1) 50%);
+}
+.pack-pick::after{
+  background:linear-gradient(110deg,rgba(255,255,255,.4) 0 10%,transparent 10% 72%,rgba(255,255,255,.16) 72% 82%,transparent 82%);
+  mix-blend-mode:normal;
+}
+.pp-tear{
+  top:10px;
+  font-family:"Courier New",monospace;
+  font-size:9px;
+  font-weight:900;
+}
+.pp-star{
+  width:54px;
+  height:54px;
+  margin-bottom:6px;
+  image-rendering:pixelated;
+  filter:drop-shadow(3px 3px 0 rgba(73,51,34,.3));
+}
+.pp-name{
+  padding:3px 8px;
+  border:2px solid rgba(255,255,255,.36);
+  background:rgba(73,51,34,.15);
+  font-size:14px;
+  letter-spacing:1px;
+  text-shadow:2px 2px 0 rgba(73,51,34,.35);
+}
+.pp-meta{
+  padding:2px 5px;
+  background:rgba(73,51,34,.16);
+  color:#fff;
+  font-size:10px;
+  font-weight:700;
+}
+.pp-no{
+  font-family:"Courier New",monospace;
+  color:rgba(73,51,34,.66);
+  font-size:11px;
+}
+.last-result,#drawFeedback{
+  border:3px solid #6b4c32;
+  border-radius:4px;
+  background:#fff4d6;
+  box-shadow:0 4px 0 rgba(74,50,31,.18);
+}
+.sel-tag{border-radius:3px;border-width:2px}
+.shell.side-collapsed .pack-grid{grid-template-columns:repeat(5,minmax(0,1fr))}
+.shell.side-collapsed .pack-pick,.shell.side-collapsed .pack-pick:nth-child(4){grid-column:auto}
+@media (max-width:1100px){
+  .topbar{margin-left:18px;margin-right:18px}
+  .shell{grid-template-columns:290px minmax(0,1fr);gap:18px;padding-left:18px;padding-right:18px}
+  .pack-grid{gap:14px}
+  .shell.side-collapsed .pack-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
+  .shell.side-collapsed .pack-pick{grid-column:span 2}
+  .shell.side-collapsed .pack-pick:nth-child(4){grid-column:2/span 2}
+}
+@media (max-width:820px){
+  .shell{grid-template-columns:1fr}
+  .side{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+  .timecard,.side-actions{grid-column:1/-1}
+  .shell.side-collapsed .side{display:none}
+  .board-head h1{font-size:32px}
+  .shell.side-collapsed .pack-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
+  .shell.side-collapsed .pack-pick{grid-column:span 2}
+  .shell.side-collapsed .pack-pick:nth-child(4){grid-column:2/span 2}
+}
+@media (max-width:620px){
+  .topbar{top:6px;margin:6px 10px 12px;padding:8px 10px;border-width:2px}
+  .brand-mark{width:32px;height:32px;border-width:2px}
+  .brand-mark::before{left:6px;top:7px}
+  .brand-mark::after{top:22px}
+  .brand-title{font-size:16px}
+  .brand-sub{display:none}
+  .topbar-actions{gap:6px}
+  .topbar-actions .icon-btn{padding:6px 9px;font-size:12px}
+  .shell{padding:4px 12px 56px}
+  .side{grid-template-columns:1fr}
+  .timecard,.side-actions{grid-column:auto}
+  .board-head{padding-left:0}
+  .board-head h1{font-size:28px}
+  .board-sub{font-size:12px}
+  .pack-grid,.shell.side-collapsed .pack-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;padding-left:2px;padding-right:2px}
+  .pack-pick,.shell.side-collapsed .pack-pick,.pack-pick:nth-child(4),.shell.side-collapsed .pack-pick:nth-child(4){grid-column:auto}
+  .pack-pick{padding-left:6px;padding-right:6px}
+  .pp-name{font-size:12px;padding:3px 5px}
+  .pp-meta{font-size:9px}
+  .reopen-fab{top:76px;left:12px;padding:7px 10px}
+  .reopen-fab .rf-time{font-size:15px}
+}
+@media (prefers-color-scheme:dark){
+  .topbar,.timecard,.card,.reopen-fab,.last-result,#drawFeedback{background:#2d2721;border-color:#80634a}
+  .brand-title,.timecard-clock span,.panel-toggle,.radio-label{color:#f3e8d2}
+  .panel-head{background:#3a3026;border-color:#80634a}
+  .board-head h1{color:#fff0d2;text-shadow:3px 3px 0 #5b402b}
+  .board-head h1 span{color:#ffae73}
+  .board-sub{background:rgba(45,39,33,.86);color:#e3cda9}
+  .side-actions span,.timecard-clock small,.timecard-sub{color:#d4b98f}
+  .pixel-bg{filter:brightness(.52) saturate(.82)}
+  .pixel-bg::after{background:rgba(26,25,22,.28)}
+  .radio-item,.chip,.icon-btn,.btn-collapse{background:#372e26;color:#f3e8d2;border-color:#80634a}
+  .hint-line{background:#3a3026;color:#d4b98f}
+  .step-badge{background:#8a603d;color:#fff0d2;border-color:#c69a66}
+}
+@media (prefers-reduced-motion:reduce){
+  .pixel-steam{animation:none;opacity:.45}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark" aria-hidden="true"></div>
+    <div>
+      <div class="brand-title">食堂盲盒</div>
+      <div class="brand-sub">选择困难终结者</div>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <button class="icon-btn" id="btnHistory">记录</button>
+    <button class="icon-btn" id="btnSettings">设置</button>
+  </div>
+</header>
+
+<div class="pixel-bg" aria-hidden="true">
+  <svg viewBox="0 0 480 270" preserveAspectRatio="xMidYMid slice" shape-rendering="crispEdges">
+    <rect width="480" height="270" fill="#b9dcd2"/>
+    <rect y="54" width="480" height="48" fill="#d5e3bc"/>
+    <rect y="102" width="480" height="45" fill="#f0d69d"/>
+    <g fill="#fff4d6">
+      <rect x="28" y="22" width="58" height="8"/>
+      <rect x="38" y="14" width="34" height="8"/>
+      <rect x="20" y="30" width="76" height="6"/>
+      <rect x="314" y="30" width="64" height="8"/>
+      <rect x="328" y="22" width="36" height="8"/>
+      <rect x="306" y="38" width="82" height="6"/>
+    </g>
+    <g fill="#ffe5a0">
+      <rect x="408" y="12" width="32" height="4"/>
+      <rect x="400" y="16" width="48" height="28"/>
+      <rect x="408" y="44" width="32" height="4"/>
+    </g>
+    <g fill="#8fb18a">
+      <rect x="0" y="112" width="58" height="28"/>
+      <rect x="16" y="102" width="42" height="38"/>
+      <rect x="52" y="116" width="62" height="26"/>
+      <rect x="76" y="106" width="38" height="36"/>
+      <rect x="368" y="112" width="52" height="30"/>
+      <rect x="392" y="100" width="40" height="42"/>
+      <rect x="426" y="110" width="54" height="32"/>
+    </g>
+    <rect y="138" width="480" height="132" fill="#79a85c"/>
+    <rect y="154" width="480" height="116" fill="#6d9951"/>
+    <rect y="216" width="480" height="54" fill="#638c49"/>
+    <g fill="#86b866">
+      <rect x="12" y="170" width="18" height="4"/>
+      <rect x="66" y="194" width="14" height="4"/>
+      <rect x="384" y="180" width="18" height="4"/>
+      <rect x="440" y="210" width="16" height="4"/>
+      <rect x="32" y="246" width="20" height="4"/>
+      <rect x="414" y="250" width="18" height="4"/>
+    </g>
+    <g>
+      <rect x="114" y="70" width="252" height="8" fill="#743b2a"/>
+      <rect x="124" y="60" width="232" height="10" fill="#984831"/>
+      <rect x="136" y="50" width="208" height="10" fill="#b8583b"/>
+      <rect x="150" y="42" width="180" height="8" fill="#cb6a46"/>
+      <rect x="124" y="78" width="232" height="70" fill="#edcf99"/>
+      <rect x="124" y="78" width="232" height="5" fill="#ffe8b8"/>
+      <rect x="124" y="140" width="232" height="8" fill="#c89c65"/>
+      <rect x="132" y="86" width="216" height="22" fill="#6f3f2a"/>
+      <rect x="136" y="90" width="208" height="14" fill="#f5d98e"/>
+      <text x="240" y="101" text-anchor="middle" fill="#7c3d29" font-size="12" font-weight="900" font-family="monospace" letter-spacing="8">云塘食堂</text>
+      <g>
+        <rect x="136" y="116" width="52" height="24" fill="#70533b"/>
+        <rect x="140" y="116" width="44" height="16" fill="#a9d3bd"/>
+        <rect x="160" y="116" width="4" height="16" fill="#70533b"/>
+        <rect x="140" y="123" width="44" height="3" fill="#70533b"/>
+        <rect x="134" y="132" width="56" height="5" fill="#9b633e"/>
+        <rect x="214" y="116" width="52" height="24" fill="#70533b"/>
+        <rect x="218" y="116" width="44" height="16" fill="#a9d3bd"/>
+        <rect x="238" y="116" width="4" height="16" fill="#70533b"/>
+        <rect x="218" y="123" width="44" height="3" fill="#70533b"/>
+        <rect x="212" y="132" width="56" height="5" fill="#9b633e"/>
+        <rect x="292" y="116" width="52" height="24" fill="#70533b"/>
+        <rect x="296" y="116" width="44" height="16" fill="#a9d3bd"/>
+        <rect x="316" y="116" width="4" height="16" fill="#70533b"/>
+        <rect x="296" y="123" width="44" height="3" fill="#70533b"/>
+        <rect x="290" y="132" width="56" height="5" fill="#9b633e"/>
+      </g>
+      <g fill="#fff1c9">
+        <rect x="146" y="120" width="12" height="3"/>
+        <rect x="224" y="120" width="12" height="3"/>
+        <rect x="302" y="120" width="12" height="3"/>
+      </g>
+      <g fill="#d76d42">
+        <rect x="132" y="108" width="58" height="5"/>
+        <rect x="210" y="108" width="58" height="5"/>
+        <rect x="288" y="108" width="58" height="5"/>
+      </g>
+      <g fill="#f7e5b8">
+        <rect x="132" y="108" width="8" height="5"/>
+        <rect x="148" y="108" width="8" height="5"/>
+        <rect x="164" y="108" width="8" height="5"/>
+        <rect x="180" y="108" width="8" height="5"/>
+        <rect x="210" y="108" width="8" height="5"/>
+        <rect x="226" y="108" width="8" height="5"/>
+        <rect x="242" y="108" width="8" height="5"/>
+        <rect x="258" y="108" width="8" height="5"/>
+        <rect x="288" y="108" width="8" height="5"/>
+        <rect x="304" y="108" width="8" height="5"/>
+        <rect x="320" y="108" width="8" height="5"/>
+        <rect x="336" y="108" width="8" height="5"/>
+      </g>
+      <rect x="196" y="112" width="10" height="36" fill="#8b5a3b"/>
+      <rect x="274" y="112" width="10" height="36" fill="#8b5a3b"/>
+    </g>
+    <g class="pixel-steam" fill="#fff4d6">
+      <rect x="152" y="106" width="4" height="6"/>
+      <rect x="156" y="100" width="4" height="6"/>
+      <rect x="152" y="94" width="4" height="6"/>
+    </g>
+    <g class="pixel-steam delay" fill="#fff4d6">
+      <rect x="308" y="106" width="4" height="6"/>
+      <rect x="312" y="100" width="4" height="6"/>
+      <rect x="308" y="94" width="4" height="6"/>
+    </g>
+    <g>
+      <rect x="82" y="112" width="8" height="38" fill="#765036"/>
+      <rect x="66" y="88" width="42" height="12" fill="#426f3c"/>
+      <rect x="58" y="100" width="58" height="12" fill="#4f8146"/>
+      <rect x="68" y="112" width="40" height="10" fill="#416e3b"/>
+      <rect x="72" y="82" width="30" height="6" fill="#578c4b"/>
+      <rect x="70" y="96" width="12" height="6" fill="#659653"/>
+      <rect x="390" y="112" width="8" height="38" fill="#765036"/>
+      <rect x="372" y="88" width="44" height="12" fill="#426f3c"/>
+      <rect x="364" y="100" width="60" height="12" fill="#4f8146"/>
+      <rect x="374" y="112" width="40" height="10" fill="#416e3b"/>
+      <rect x="378" y="82" width="30" height="6" fill="#578c4b"/>
+      <rect x="398" y="96" width="12" height="6" fill="#659653"/>
+    </g>
+    <path d="M206 148h68l54 122H152z" fill="#caa678"/>
+    <path d="M216 148h48l34 122H182z" fill="#dfbf8d"/>
+    <g fill="#bd956b">
+      <rect x="206" y="166" width="70" height="3"/>
+      <rect x="194" y="190" width="94" height="3"/>
+      <rect x="180" y="218" width="122" height="3"/>
+      <rect x="166" y="248" width="150" height="3"/>
+      <rect x="236" y="148" width="3" height="122"/>
+    </g>
+    <g>
+      <rect x="36" y="184" width="86" height="8" fill="#70492f"/>
+      <rect x="42" y="176" width="74" height="8" fill="#a56b42"/>
+      <rect x="48" y="192" width="7" height="30" fill="#70492f"/>
+      <rect x="104" y="192" width="7" height="30" fill="#70492f"/>
+      <rect x="28" y="204" width="26" height="6" fill="#8b5b39"/>
+      <rect x="104" y="204" width="26" height="6" fill="#8b5b39"/>
+      <rect x="32" y="210" width="5" height="14" fill="#70492f"/>
+      <rect x="121" y="210" width="5" height="14" fill="#70492f"/>
+      <rect x="64" y="168" width="34" height="5" fill="#f2ddae"/>
+      <rect x="68" y="164" width="26" height="4" fill="#fff0c8"/>
+      <rect x="74" y="160" width="14" height="4" fill="#d76d42"/>
+      <rect x="98" y="166" width="6" height="10" fill="#7ca65a"/>
+    </g>
+    <g>
+      <rect x="358" y="184" width="86" height="8" fill="#70492f"/>
+      <rect x="364" y="176" width="74" height="8" fill="#a56b42"/>
+      <rect x="370" y="192" width="7" height="30" fill="#70492f"/>
+      <rect x="426" y="192" width="7" height="30" fill="#70492f"/>
+      <rect x="350" y="204" width="26" height="6" fill="#8b5b39"/>
+      <rect x="426" y="204" width="26" height="6" fill="#8b5b39"/>
+      <rect x="354" y="210" width="5" height="14" fill="#70492f"/>
+      <rect x="443" y="210" width="5" height="14" fill="#70492f"/>
+      <rect x="386" y="168" width="34" height="5" fill="#f2ddae"/>
+      <rect x="390" y="164" width="26" height="4" fill="#fff0c8"/>
+      <rect x="396" y="160" width="14" height="4" fill="#e5ad47"/>
+      <rect x="376" y="166" width="6" height="10" fill="#7ca65a"/>
+    </g>
+    <g>
+      <rect x="18" y="142" width="48" height="20" fill="#9b633e"/>
+      <rect x="22" y="138" width="40" height="6" fill="#b47a4d"/>
+      <rect x="26" y="130" width="8" height="10" fill="#4f8146"/>
+      <rect x="38" y="124" width="8" height="16" fill="#5f914f"/>
+      <rect x="50" y="132" width="8" height="8" fill="#416e3b"/>
+      <rect x="32" y="126" width="6" height="6" fill="#f1b24c"/>
+      <rect x="46" y="128" width="6" height="6" fill="#e98269"/>
+      <rect x="414" y="142" width="48" height="20" fill="#9b633e"/>
+      <rect x="418" y="138" width="40" height="6" fill="#b47a4d"/>
+      <rect x="422" y="130" width="8" height="10" fill="#4f8146"/>
+      <rect x="434" y="124" width="8" height="16" fill="#5f914f"/>
+      <rect x="446" y="132" width="8" height="8" fill="#416e3b"/>
+      <rect x="428" y="126" width="6" height="6" fill="#f1b24c"/>
+      <rect x="442" y="128" width="6" height="6" fill="#e98269"/>
+    </g>
+    <g fill="#e8cf9b">
+      <rect x="4" y="232" width="64" height="4"/>
+      <rect x="4" y="248" width="64" height="4"/>
+      <rect x="10" y="226" width="4" height="30"/>
+      <rect x="34" y="226" width="4" height="30"/>
+      <rect x="58" y="226" width="4" height="30"/>
+      <rect x="412" y="232" width="64" height="4"/>
+      <rect x="412" y="248" width="64" height="4"/>
+      <rect x="418" y="226" width="4" height="30"/>
+      <rect x="442" y="226" width="4" height="30"/>
+      <rect x="466" y="226" width="4" height="30"/>
+    </g>
+    <g>
+      <rect x="98" y="238" width="4" height="10" fill="#416e3b"/>
+      <rect x="94" y="234" width="4" height="4" fill="#f3c1c9"/>
+      <rect x="102" y="234" width="4" height="4" fill="#f3c1c9"/>
+      <rect x="98" y="230" width="4" height="4" fill="#fff0c8"/>
+      <rect x="366" y="238" width="4" height="10" fill="#416e3b"/>
+      <rect x="362" y="234" width="4" height="4" fill="#f3c1c9"/>
+      <rect x="370" y="234" width="4" height="4" fill="#f3c1c9"/>
+      <rect x="366" y="230" width="4" height="4" fill="#fff0c8"/>
+    </g>
+  </svg>
+</div>
+
+<button class="reopen-fab" id="btnReopenSide" type="button" aria-label="展开食堂与筛选面板" aria-controls="sidePanel" aria-expanded="false">
+  <span class="rf-time" id="fabTime">--:--</span>
+  <span>展开</span>
+</button>
+
+<main class="shell" id="shell">
+  <aside class="side" id="sidePanel" aria-label="食堂与筛选设置">
+
+  <section class="timecard" id="timeCard" aria-label="按设备本地时间显示的档口营业状态">
+    <div class="timecard-clock">
+      <span id="clockNow">--:--</span>
+      <small class="clock-date" id="clockDate">正在读取日期</small>
+      <small id="clockZone">设备本地时间</small>
+    </div>
+    <div class="timecard-info">
+      <div class="timecard-main">
+        <span class="time-dot" id="clockDot"></span>
+        <b id="clockState">读取中…</b>
+        <span class="timecard-next" id="clockNext"></span>
+      </div>
+      <div class="timecard-sub" id="clockSub">按你设备的本地时间判断营业状态</div>
+    </div>
+  </section>
+
+  <div class="side-actions">
+    <span>筛选与食堂</span>
+    <button class="btn-collapse" id="btnCollapseSide" type="button" aria-controls="sidePanel" aria-expanded="true">收起侧栏 ‹</button>
+  </div>
+
+  <section class="card panel" id="locCard">
+    <div class="panel-head">
+      <button class="panel-toggle" data-panel="loc" type="button" aria-expanded="true">
+        <span class="step-badge">1</span>
+        <span>选个食堂</span>
+        <span class="chev" aria-hidden="true">▾</span>
+      </button>
+      <span class="card-tip">决定候选范围</span>
+    </div>
+    <div class="panel-body">
+    <div class="radio-group" id="locGroup">
+      <label class="radio-item">
+        <input type="radio" name="loc" value="nearest">
+        <span class="radio-dot"></span>
+        <span class="radio-body">
+          <span class="radio-label">选择最近的食堂</span>
+          <span class="radio-meta" id="nearestMeta">需要定位后自动判断</span>
+        </span>
+      </label>
+      <label class="radio-item">
+        <input type="radio" name="loc" value="c1" checked>
+        <span class="radio-dot"></span>
+        <span class="radio-body">
+          <span class="radio-label">汀香园</span>
+          <span class="radio-meta" id="c1Meta">3 层 · 2 家档口</span>
+        </span>
+      </label>
+      <label class="radio-item">
+        <input type="radio" name="loc" value="c2">
+        <span class="radio-dot"></span>
+        <span class="radio-body">
+          <span class="radio-label">甘怡园</span>
+          <span class="radio-meta" id="c2Meta">2 层 · 2 家档口</span>
+        </span>
+      </label>
+    </div>
+
+    <div class="locate-row">
+      <button class="btn-locate" id="btnLocate">使用我的定位</button>
+    </div>
+    <div class="hint-line" id="locHint">直接选食堂就能抽；选「最近」时需要定位。</div>
+    </div>
+  </section>
+
+  <section class="card panel" id="filterCard">
+    <div class="panel-head">
+      <button class="panel-toggle" data-panel="filter" type="button" aria-expanded="true">
+        <span class="step-badge">2</span>
+        <span>今天有什么讲究</span>
+        <span class="chev" aria-hidden="true">▾</span>
+      </button>
+      <button class="icon-btn" id="btnReset" style="padding:5px 11px;font-size:12px">重置</button>
+    </div>
+    <div class="panel-body">
+
+    <div class="filter-block">
+      <div class="filter-label">今天不想吃 <em>可多选，至少留一个不选</em></div>
+      <div class="chip-row" data-group="exclude" data-mode="multi">
+        <button class="chip" data-value="米饭" aria-pressed="false">米饭</button>
+        <button class="chip" data-value="面食" aria-pressed="false">面食</button>
+        <button class="chip" data-value="粉" aria-pressed="false">粉</button>
+        <button class="chip" data-value="麻辣烫" aria-pressed="false">麻辣烫</button>
+        <button class="chip" data-value="汤粥" aria-pressed="false">汤粥</button>
+        <button class="chip" data-value="汉堡" aria-pressed="false">汉堡</button>
+      </div>
+    </div>
+
+    <div class="filter-block">
+      <div class="filter-label">预算 <em>单选</em></div>
+      <div class="chip-row" data-group="budget" data-mode="single">
+        <button class="chip" data-value="b10" data-tone="green" aria-pressed="false">10 元以内</button>
+        <button class="chip" data-value="b15" data-tone="green" aria-pressed="false">10-15 元</button>
+        <button class="chip" data-value="b25" data-tone="green" aria-pressed="false">15-25 元</button>
+        <button class="chip" data-value="b25p" data-tone="green" aria-pressed="false">25 元以上</button>
+      </div>
+    </div>
+
+    <div class="filter-block">
+      <div class="filter-label">是否轻食 <em>开启后只抽校内减脂轻食档口</em></div>
+      <div class="chip-row" data-group="lightMode" data-mode="single">
+        <button class="chip" data-value="light" data-tone="green" aria-pressed="false">只要轻食减脂餐</button>
+      </div>
+    </div>
+
+    <div class="switch-list">
+      <label class="switch-row">
+        <span>只看现在营业的<small id="openHint">按你设备的当前时间筛选</small></span>
+        <span class="switch"><input type="checkbox" id="swOpen" checked><span></span></span>
+      </label>
+      <label class="switch-row">
+        <span>避开最近吃过的<small>3 天内抽到过的店会大幅降权</small></span>
+        <span class="switch"><input type="checkbox" id="swFresh" checked><span></span></span>
+      </label>
+    </div>
+    </div>
+  </section>
+  </aside>
+
+  <section class="board">
+    <div class="board-head">
+      <div class="eyebrow">长沙理工 · 云塘校区食堂</div>
+      <h1>挑一个卡包<br><span>撕开今天这顿饭</span></h1>
+      <p class="board-sub">5 个盲盒随便挑一个，沿封条撕开，吃什么交给运气。</p>
+    </div>
+
+    <div class="last-result" id="lastResult" hidden>
+      <div class="lr-avatar" id="lrAvatar"></div>
+      <div>
+        <div class="lr-label">上一次抽到</div>
+        <div class="lr-name" id="lrName"></div>
+        <div class="lr-meta" id="lrMeta"></div>
+      </div>
+      <div class="lr-go">查看</div>
+    </div>
+
+    <div class="selected-strip" id="selectedStrip"></div>
+
+    <div id="drawFeedback" hidden>
+      <p class="hint-line" id="drawMessage" role="status"></p>
+      <button class="btn-mini" id="drawAction" type="button" hidden></button>
+    </div>
+
+    <div class="pack-grid" id="packGrid" aria-label="选择一个卡包撕开">
+      <button class="pack-pick" data-theme="caramel" type="button" style="--pk1:#ffc48c;--pk2:#ff9a5f;--pk3:#f4742c">
+        <span class="pp-tear">TEAR HERE</span>
+        <svg class="pp-star" viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M7 1h2v4h4v2h-4v4h-2V7H3V5h4z" fill="#3b2415"/>
+          <path d="M7 2h2v4h4v2h-4v4h-2V8H3V6h4z" fill="#fff7e8"/>
+        </svg>
+        <span class="pp-name">焦糖卡包</span>
+        <span class="pp-meta">内含 1 份今日餐食</span>
+        <span class="pp-no">01</span>
+      </button>
+
+      <button class="pack-pick" data-theme="matcha" type="button" style="--pk1:#bfe39a;--pk2:#8ecb6b;--pk3:#5faf4a">
+        <span class="pp-tear">TEAR HERE</span>
+        <svg class="pp-star" viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M7 1h2v4h4v2h-4v4h-2V7H3V5h4z" fill="#2f4a22"/>
+          <path d="M7 2h2v4h4v2h-4v4h-2V8H3V6h4z" fill="#f6ffe8"/>
+        </svg>
+        <span class="pp-name">抹茶卡包</span>
+        <span class="pp-meta">内含 1 份今日餐食</span>
+        <span class="pp-no">02</span>
+      </button>
+
+      <button class="pack-pick" data-theme="soda" type="button" style="--pk1:#b8e6ff;--pk2:#7fc9f2;--pk3:#4a9fdd">
+        <span class="pp-tear">TEAR HERE</span>
+        <svg class="pp-star" viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M7 1h2v4h4v2h-4v4h-2V7H3V5h4z" fill="#173a52"/>
+          <path d="M7 2h2v4h4v2h-4v4h-2V8H3V6h4z" fill="#f2fbff"/>
+        </svg>
+        <span class="pp-name">汽水卡包</span>
+        <span class="pp-meta">内含 1 份今日餐食</span>
+        <span class="pp-no">03</span>
+      </button>
+
+      <button class="pack-pick" data-theme="grape" type="button" style="--pk1:#e3c7ff;--pk2:#c19ae8;--pk3:#9a6cc9">
+        <span class="pp-tear">TEAR HERE</span>
+        <svg class="pp-star" viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M7 1h2v4h4v2h-4v4h-2V7H3V5h4z" fill="#3a2350"/>
+          <path d="M7 2h2v4h4v2h-4v4h-2V8H3V6h4z" fill="#fbf3ff"/>
+        </svg>
+        <span class="pp-name">葡萄卡包</span>
+        <span class="pp-meta">内含 1 份今日餐食</span>
+        <span class="pp-no">04</span>
+      </button>
+
+      <button class="pack-pick" data-theme="mango" type="button" style="--pk1:#ffe9a3;--pk2:#ffd266;--pk3:#f2b53c">
+        <span class="pp-tear">TEAR HERE</span>
+        <svg class="pp-star" viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M7 1h2v4h4v2h-4v4h-2V7H3V5h4z" fill="#4a3410"/>
+          <path d="M7 2h2v4h4v2h-4v4h-2V8H3V6h4z" fill="#fffdf2"/>
+        </svg>
+        <span class="pp-name">芒果卡包</span>
+        <span class="pp-meta">内含 1 份今日餐食</span>
+        <span class="pp-no">05</span>
+      </button>
+    </div>
+  </section>
+</main>
+
+<!-- 抽签遮罩 -->
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" tabindex="-1" aria-label="正在抽取今日食堂盲盒">
+  <button class="skip-btn" id="btnSkip">跳过动画</button>
+  <button class="overlay-close" id="btnOverlayClose" aria-label="关闭">×</button>
+
+  <div class="overlay-inner">
+  <div class="pack-stage" id="packStage">
+    <div class="pack-float" id="packFloat">
+      <div class="pack" id="pack" aria-label="可旋转的食堂盲盒卡包">
+        <div class="pack-body">
+          <div class="pack-face pack-back">
+            <div class="pack-back-print">
+              <div class="pb-title">SWIPE TO TEAR</div>
+              <div class="pb-mark">✦</div>
+              <div class="pb-sub">沿顶部封条左右划开</div>
+            </div>
+          </div>
+
+          <div class="pack-cards" id="packCards">
+            <div class="pack-card" id="packCard">
+              <div class="pc-inner">
+                <div class="pc-face pc-front">
+                  <div class="pc-kicker">今日盲盒</div>
+                  <div class="pc-name" id="pcName">—</div>
+                  <div class="pc-meta" id="pcMeta"></div>
+                  <div class="pc-star">✦</div>
+                </div>
+                <div class="pc-face pc-back"><span>?</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pack-face pack-front">
+            <div class="pack-print">
+              <div class="pack-brand">食堂盲盒</div>
+              <div class="pack-sub">TODAY'S LUNCH</div>
+              <svg class="holo-star" viewBox="0 0 120 120" aria-hidden="true">
+                <defs>
+                  <linearGradient id="holoGrad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stop-color="#ffe9a8"/>
+                    <stop offset=".28" stop-color="#ffc2e2"/>
+                    <stop offset=".52" stop-color="#b9e6ff"/>
+                    <stop offset=".76" stop-color="#d9c6ff"/>
+                    <stop offset="1" stop-color="#ffe0b0"/>
+                  </linearGradient>
+                  <radialGradient id="holoGlow" cx=".32" cy=".24" r=".85">
+                    <stop offset="0" stop-color="#fff" stop-opacity=".95"/>
+                    <stop offset=".45" stop-color="#fff" stop-opacity=".14"/>
+                    <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+                  </radialGradient>
+                </defs>
+                <path d="M60 6 C63 32 66 37 94 40 C66 43 63 48 60 74 C57 48 54 43 26 40 C54 37 57 32 60 6 Z"
+                      fill="url(#holoGrad)" stroke="rgba(255,255,255,.8)" stroke-width="1.6"/>
+                <path d="M60 6 C63 32 66 37 94 40 C66 43 63 48 60 74 C57 48 54 43 26 40 C54 37 57 32 60 6 Z"
+                      fill="url(#holoGlow)"/>
+                <circle cx="52" cy="41" r="3.1" fill="#3a2a20"/>
+                <circle cx="68" cy="41" r="3.1" fill="#3a2a20"/>
+                <path d="M54 49 Q60 55 66 49" fill="none" stroke="#3a2a20" stroke-width="2.6" stroke-linecap="round"/>
+              </svg>
+              <div class="pack-foot"><span>云塘校区</span><span>1 DISH · 随机</span></div>
+            </div>
+          </div>
+
+          <div class="pack-side pack-side-l"></div>
+          <div class="pack-side pack-side-r"></div>
+
+          <div class="pack-mouth" id="packMouth">
+            <div class="pack-gap" id="packGap"></div>
+            <svg class="tear-svg" id="tearSvg" viewBox="0 0 100 26" preserveAspectRatio="none" aria-hidden="true">
+              <path id="tearBase" pathLength="100" d=""/>
+              <path id="tearHi" pathLength="100" d=""/>
+            </svg>
+          </div>
+
+          <div class="pack-strip" id="packStrip" role="button" tabindex="0" aria-label="按住封条，左右滑动撕开卡包">
+            <span class="strip-tear">TEAR HERE</span>
+            <span class="strip-arrows">← →</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pack-scrap" id="packScrap" aria-hidden="true"></div>
+    <div class="pack-hint" id="packHint">拖动卡包可旋转 · 按住顶部封条左右划开</div>
+  </div>
+
+  <div class="reveal" id="reveal">
+    <div class="reveal-kicker">今日盲盒</div>
+    <div class="reveal-name" id="rvName"></div>
+    <div class="reveal-meta" id="rvMeta"></div>
+    <div class="reveal-status" id="rvStatus"></div>
+    <div class="reveal-tags" id="rvTags"></div>
+    <div class="reveal-reason" id="rvReason"></div>
+    <div class="reveal-actions">
+      <button class="btn-accept" id="btnAccept">就它了，去吃</button>
+      <div class="row">
+        <button class="btn-ghost" id="btnAgain">再抽一次</button>
+        <button class="btn-ghost" id="btnAnother">换一家</button>
+        <button class="btn-ghost" id="btnFav" style="flex:.7">收藏</button>
+      </div>
+      <button class="btn-text" id="btnNav">复制档口位置，粘到地图里搜</button>
+    </div>
+  </div>
+  </div>
+</div>
+
+<!-- 历史抽屉 -->
+<div class="drawer-mask" id="maskHistory"></div>
+<div class="drawer" id="drawerHistory" role="dialog" aria-modal="true" aria-label="抽取记录与收藏">
+  <div class="drawer-head">
+    <div class="drawer-title">记录</div>
+    <button class="drawer-close" data-close="history" aria-label="关闭">×</button>
+  </div>
+  <div class="drawer-tabs" role="tablist" aria-label="记录类型">
+    <button class="drawer-tab" data-tab="historyBody" role="tab" aria-selected="true">抽取记录</button>
+    <button class="drawer-tab" data-tab="favBody" role="tab" aria-selected="false">我的收藏</button>
+  </div>
+  <div class="drawer-body">
+    <div id="historyBody"></div>
+    <div id="favBody" hidden></div>
+  </div>
+</div>
+
+<!-- 设置抽屉 -->
+<div class="drawer-mask" id="maskSettings"></div>
+<div class="drawer" id="drawerSettings" role="dialog" aria-modal="true" aria-label="设置">
+  <div class="drawer-head">
+    <div class="drawer-title">设置</div>
+    <button class="drawer-close" data-close="settings" aria-label="关闭">×</button>
+  </div>
+  <div class="drawer-body">
+    <div class="setting-row">
+      <div>
+        <div class="st-title">抽签动画</div>
+        <div class="st-desc">关闭后直接揭晓结果</div>
+      </div>
+      <span class="switch"><input type="checkbox" id="swAnim" checked><span></span></span>
+    </div>
+
+    <div class="setting-row">
+      <div>
+        <div class="st-title">抽签音效</div>
+        <div class="st-desc">滚动 tick 与揭晓提示音，默认关闭</div>
+      </div>
+      <span class="switch"><input type="checkbox" id="swSound"><span></span></span>
+    </div>
+
+    <div class="setting-row" style="flex-direction:column;align-items:stretch;gap:9px">
+      <div>
+        <div class="st-title">食堂坐标校准</div>
+        <div class="st-desc">走到食堂门口点「用当前位置」，一次就够，比地图取点准</div>
+      </div>
+      <div class="coord-row">
+        <span class="coord-name">汀香园</span>
+        <span class="coord-val" id="coordVal_c1">未校准</span>
+        <button class="btn-mini" data-calib="c1">用当前位置</button>
+      </div>
+      <div class="coord-row">
+        <span class="coord-name">甘怡园</span>
+        <span class="coord-val" id="coordVal_c2">未校准</span>
+        <button class="btn-mini" data-calib="c2">用当前位置</button>
+      </div>
+    </div>
+
+    <div class="setting-row">
+      <div>
+        <div class="st-title">数据导出</div>
+        <div class="st-desc">偏好、记录、收藏打包成 JSON</div>
+      </div>
+      <button class="btn-mini" id="btnExport">导出</button>
+    </div>
+    <div class="setting-row">
+      <div>
+        <div class="st-title">数据导入</div>
+        <div class="st-desc">从之前导出的 JSON 恢复</div>
+      </div>
+      <button class="btn-mini" id="btnImport">选择文件</button>
+      <input type="file" id="fileImport" accept="application/json,.json" hidden>
+    </div>
+    <div class="setting-row">
+      <div>
+        <div class="st-title">恢复默认偏好</div>
+        <div class="st-desc">只清空筛选条件，不动记录</div>
+      </div>
+      <button class="btn-mini" id="btnResetPrefs">恢复</button>
+    </div>
+    <div class="setting-row">
+      <div>
+        <div class="st-title">清空全部数据</div>
+        <div class="st-desc">记录、收藏、偏好一并清除</div>
+      </div>
+      <button class="btn-mini danger" id="btnClearAll">清空</button>
+    </div>
+    <p style="font-size:11.5px;color:#a89787;line-height:1.7;margin-top:16px">
+      档口只保留校内，共 18 家（汀香园 13 / 甘怡园 5），名称与楼层来自店铺截图。已剔除小料、饮料、小吃、盲盒套餐与满减福利，只保留菜品和固定套餐；价格为截图中的标价。麻辣香锅这类自选配菜档口只推店名，不推具体菜品。<br>
+      营业时间按你设备的本地时间判断：粥吧、手工鲜肉包 06:00–12:30，其余档口 10:30–19:30。<br>
+      双击打开时浏览器通常禁止定位，用本地服务器打开（如 <code>python -m http.server</code>）才能校准坐标和使用真实定位。
+    </p>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="toast" id="srLive" role="status" aria-live="polite" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);opacity:0"></div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ============================================================
+   * 数据层
+   * ============================================================ */
+
+  /* ------------------------------------------------------------
+   * 食堂与档口配置区
+   * 坐标系：WGS-84（与浏览器 Geolocation 一致）。
+   * 食堂坐标来源：百度地图 POI「长沙理工大学-汀香园」「甘饴园时尚餐厅」，
+   *   已按 百度墨卡托 → BD-09 → GCJ-02 → WGS-84 转换，POI 点误差约 30 米。
+   * 数据范围：v0.2 起只保留校内档口（汀香园 / 甘饴园），校外店铺全部移除。
+   *   减脂轻食档口和符合条件的菜品以 light:true 标记。
+   * 营业时间：粥吧、手工鲜肉包为早市 06:00–12:30；其余档口统一 10:30–19:30。
+   *   营业判断统一读取设备本地时间（new Date()），与页面顶部时钟同源。
+   * ------------------------------------------------------------ */
+  const CANTEENS = [
+    { id:'c1', name:'汀香园', lat:28.069999, lng:113.000498, floors:3 },
+    { id:'c2', name:'甘怡园', lat:28.073846, lng:113.003996, floors:3 }
+  ];
+
+  // 定位点到最近食堂超过该距离时，视为坐标与用户不在同一校区，不再展示步行分钟数
+  const COORD_ALERT_METERS = 5000;
+
+  const DEFAULT_COORDS = {};
+  CANTEENS.forEach(c => { DEFAULT_COORDS[c.id] = { lat:c.lat, lng:c.lng }; });
+
+  const STORES = [
+    { id:'s03', name:'塔斯汀中国汉堡(云塘店)', canteenId:'c1', spot:'汀香园 1F 档口', floor:1,
+      avgPrice:18, light:false, tags:['汉堡'], openHours:[['10:30', '19:30']],
+      dishes:[
+        { name:'香辣鸡腿堡', price:18, category:['汉堡', '西式', '油炸'], diet:[], light:false },
+        { name:'培根煎蛋堡', price:15, category:['汉堡', '西式'], diet:[], light:false },
+        { name:'脆脆鸡腿堡', price:17, category:['汉堡', '西式', '油炸'], diet:[], light:false }
+      ] },
+    { id:'s04', name:'甘饴园时尚餐厅', canteenId:'c2', spot:'甘怡园 2F', floor:2,
+      avgPrice:20, light:false, tags:['餐厅'], openHours:[['10:30', '19:30']],
+      dishes:[
+        { name:'辣椒炒肉套餐', price:16, category:['米饭'], diet:[], light:false },
+        { name:'小炒黄牛肉', price:22, category:['米饭'], diet:[], light:false },
+        { name:'番茄炒蛋', price:12, category:['米饭'], diet:['素食'], light:false },
+        { name:'清炒时蔬', price:10, category:['米饭'], diet:['素食'], light:false },
+        { name:'酸辣粉', price:12, category:['粉'], diet:[], light:false }
+      ] },
+    { id:'s05', name:'莫小喃水饺·油泼辣子面', canteenId:'c1', spot:'汀香园', floor:null,
+      avgPrice:14, light:false, tags:['面食', '水饺'], openHours:[['10:30', '19:30']],
+      dishes:[
+        { name:'打卤刀削面', price:14.5, category:['面食'], diet:[], light:false },
+        { name:'素油泼刀削面', price:12.9, category:['面食'], diet:['素食'], light:false },
+        { name:'红烧牛肉刀削面', price:18.8, category:['面食'], diet:[], light:false },
+        { name:'韩式炸酱面', price:15, category:['面食'], diet:[], light:false },
+        { name:'麻辣肉沫炒刀削面', price:16.8, category:['面食'], diet:[], light:false },
+        { name:'椒麻鸡丝拌面', price:15.8, category:['面食'], diet:[], light:false },
+        { name:'酸菜肉丝削面', price:12.8, category:['面食'], diet:[], light:false },
+        { name:'红油肥肠刀削面+煎蛋', price:18, category:['面食'], diet:[], light:false },
+        { name:'韭菜鸡蛋水饺', price:11.9, category:['面食'], diet:['素食'], light:false },
+        { name:'黑椒牛肉水饺', price:11.9, category:['面食'], diet:[], light:false },
+        { name:'荠菜猪肉水饺', price:11.9, category:['面食'], diet:[], light:false },
+        { name:'馄饨', price:12.8, category:['面食'], diet:[], light:false }
+      ] },
+    { id:'s06', name:'胖钵钵小锅烧(汀香园二店)', canteenId:'c1', spot:'汀香园 2F', floor:2,
+      avgPrice:17, light:false, tags:['小锅菜'], openHours:[['10:30', '19:30']],
+      dishes:[
+        { name:'小锅烧烤鸡腿肉', price:16.8, category:['米饭'], diet:[], light:false },
+        { name:'油汁五花肉', price:17.8, category:['米饭'], diet:[], light:false },
+        { name:'爆炒猪肉', price:17.8, category:['米饭'], diet:[], light:false },
+        { name:'香辣炸蛋五花肉', price:16.8, category:['米饭'], diet:[], light:false },
+        { name:'浓汁酱香鸡', price:16.8, category:['米饭'], diet:[], light:false },
+        { name:'小锅茄子烧', price:15.8, category:['米饭'], diet:['素食'], light:false },
+        { name:'孜然肉片', price:16.8, category:['米饭'], diet:[], light:false },
+        { name:'红烧肉', price:17.8, category:['米饭'], diet:[], light:false },
+        { name:'川香梅花肉', price:17.8, category:['米饭'], diet:[], light:false },
+        { name:'香爆虾', price:19.8, category:['米饭'], diet:[], light:false },
+        { name:'油汁黑鱼片', price:20.8, category:['米饭'], diet:[], light:false },
+        { name:'油汁小锅烧肥牛', price:21.8, category:['米饭'], diet:[], light:false },
+        { name:'青花椒豆花', price:13.8, category:['米饭'], diet:['素食'], light:false },
+        { name:'油汁肥牛烧面', price:11.8, category:['面食'], diet:[], light:false }
+      ] },
+    { id:'s07', name:'湘卜厨粉面(汀香园二店)', canteenId:'c1', spot:'汀香园 2F', floor:2,
+      avgPrice:14, light:false, tags:['粉面'], openHours:[['10:30', '19:30']],
+      dishes:[
+        { name:'河南特色焖面', price:15.9, category:['面食'], diet:[], light:false },
+        { name:'葱油拌面', price:12, category:['面食'], diet:['素食'], light:false },
+        { name:'烤肉酱拌面', price:12, category:['面食'], diet:[], light:false },
+        { name:'香干炒肉拌面', price:14, category:['面食'], diet:[], light:false },
+        { name:'青椒炒肉拌面', price:14, category:['面食'], diet:[], light:false },
+        { name:'火鸡拌面', price:12, category:['面食'], diet:[], light:false },
+        { name:'肉酱拌面', price:12, category:['面食'], diet:[], light:false },
+        { name:'小炒肉拌圆粉', price:14, category:['粉'], diet:[], light:false },
+        { name:'香辣牛肉粉(汤粉分离)', price:16, category:['粉'], diet:[], light:false },
+        { name:'重庆小面(汤面分开)', price:12, category:['面食'], diet:[], light:false }
+      ] },
+    { id:'s08', name:'拼多饺(汀香园三店)', canteenId:'c1', spot:'汀香园 3F', floor:3,
+      avgPrice:10, light:false, tags:['饺子', '馄饨'], openHours:[['10:30', '19:30']],
+      dishes:[
+        { name:'云吞粉/米线', price:11.8, category:['粉'], diet:[], light:false },
+        { name:'猪油拌粉+煎蛋', price:9.8, category:['粉'], diet:[], light:false },
+        { name:'鸡蛋+猪肉肠粉', price:10.8, category:['粉'], diet:[], light:false },
+        { name:'手工鲜肉馄饨', price:9.8, category:['面食'], diet:[], light:false },
+        { name:'全家福水饺', price:9.8, category:['面食'], diet:[], light:false },
+        { name:'手工羊肉大葱饺子', price:11.8, category:['面食'], diet:[], light:false },
+        { name:'手工牛肉大葱饺子', price:11.8, category:['面食'], diet:[], light:false },
+        { name:'手工鲜肉云吞', price:9.8, category:['面食'], diet:[], light:false },
+        { name:'玉米肉饺', price:9.8, category:['面食'], diet:[], light:false }
+      ] },
+    { id:'s09', name:'霸碗盖码饭(汀香园一店)', canteenId:'c1', spot:'汀香园 1F', floor:1,
+      avgPrice:20, light:false, tags:['盖码饭'], openHours:[['10:30', '19:30']],
+      dishes:[
+        { name:'超值双拼自选盖码饭', price:18.8, category:['米饭'], diet:[], light:false },
+        { name:'豪华双拼自选盖码饭', price:22.8, category:['米饭'], diet:[], light:false },
+        { name:'妈妈味道家常盖码饭', price:17.8, category:['米饭'], diet:[], light:false },
+        { name:'三拼: 农家一碗香+火爆碎碎鸭+剁椒土豆丝', price:24.8, category:['米饭'], diet:[], light:false },
+        { name:'香肠蛋炒饭', price:20.8, category:['米饭'], diet:[], light:false },
+        { name:'双拼: 孜然牛肉拼剁椒土豆丝盖码饭', price:23.8, category:['米饭'], diet:[], light:false },
+        { name:'胡萝卜丝肉沫盖码饭', price:18.8, category:['米饭'], diet:[], light:false },
+        { name:'随心选自选双拼盖码饭', price:14.8, category:['米饭'], diet:[], light:false },
+        { name:'豪华自选三拼盖码饭', price:15.3, category:['米饭'], diet:[], light:false }
+      ] },
+    { id:'s10', name:'台湾鸡排饭(汀香园二店)', canteenId:'c1', spot:'汀香园 2F', floor:2,
+      avgPrice:14, light:false, tags:['鸡排饭'], openHours:[['10:30', '19:30']],
+      dishes:[
+        { name:'二荤一素套餐', price:16, category:['米饭'], diet:[], light:false },
+        { name:'两荤两素套餐', price:17, category:['米饭'], diet:[], light:false },
+        { name:'烤五花肉', price:16, category:['米饭'], diet:[], light:false },
+        { name:'一荤二素套餐', price:14, category:['米饭'], diet:[], light:false },
+        { name:'三荤一素套餐', price:21, category:['米饭'], diet:[], light:false },
+        { name:'农家一碗香', price:6.28, category:['米饭'], diet:[], light:false },
+        { name:'黄焖鸡', price:6.5, category:['米饭'], diet:[], light:false },
+        { name:'糖醋里脊', price:6.5, category:['米饭'], diet:[], light:false },
+        { name:'东安醋鸡', price:7, category:['米饭'], diet:[], light:false },
+        { name:'香辣鸡腿', price:6.5, category:['米饭'], diet:[], light:false },
+        { name:'卤鸭腿', price:8.5, category:['米饭'], diet:[], light:false },
+        { name:'麻辣鸡脆骨', price:6.5, category:['米饭'], diet:[], light:false }
+      ] },
+    { id:'s11', name:'港式滑蛋饭(汀香园三楼店)', canteenId:'c1', spot:'汀香园 3F', floor:3,
+      avgPrice:15, light:false, tags:['滑蛋饭'], openHours:[['10:30', '19:30']],
+      dishes:[
+        { name:'和风炒饭', price:13, category:['米饭'], diet:[], light:false },
+        { name:'意式番茄肉酱饭', price:15, category:['米饭'], diet:[], light:false },
+        { name:'红烧肉(配米饭)', price:15.8, category:['米饭'], diet:[], light:false },
+        { name:'湘式辣卤肉饭', price:13.8, category:['米饭'], diet:[], light:false },
+        { name:'日式照烧鸡腿饭', price:15.8, category:['米饭'], diet:[], light:false },
+        { name:'港式奥尔良鸡丁滑蛋饭', price:14, category:['米饭'], diet:[], light:false },
+        { name:'铁板黑椒鸡排饭', price:17, category:['米饭'], diet:[], light:false },
+        { name:'港式嫩牛肉滑蛋饭', price:20, category:['米饭'], diet:[], light:false },
+        { name:'港式蟹柳滑蛋饭', price:14.9, category:['米饭'], diet:[], light:false },
+        { name:'葱烧鸡腿肉饭', price:16, category:['米饭'], diet:[], light:false },
+        { name:'湘西肉臊子饭', price:11.9, category:['米饭'], diet:[], light:false }
+      ] },
+    { id:'s12', name:'瓦罐汤套餐饭(汀香园三店)', canteenId:'c1', spot:'汀香园 3F', floor:3,
+      avgPrice:9, light:false, tags:['套餐饭', '瓦罐汤'], openHours:[['10:30', '19:30']],
+      dishes:[
+        { name:'两荤一素一汤套餐', price:14.68, category:['米饭'], diet:[], light:false },
+        { name:'孜然牛肉', price:8, category:['米饭'], diet:[], light:false },
+        { name:'烤鸭腿', price:8, category:['米饭'], diet:[], light:false },
+        { name:'青椒炒肉', price:6.86, category:['米饭'], diet:[], light:false },
+        { name:'宫保鸡丁', price:6.86, category:['米饭'], diet:[], light:false },
+        { name:'啤酒鸭', price:6.86, category:['米饭'], diet:[], light:false },
+        { name:'西红柿炒鸡蛋', price:4, category:['米饭'], diet:['素食'], light:false },
+        { name:'香干炒肉', price:4.88, category:['米饭'], diet:[], light:false },
+        { name:'鱼香肉丝', price:5.86, category:['米饭'], diet:[], light:false },
+        { name:'水蒸蛋', price:4, category:['汤粥'], diet:['素食'], light:false },
+        { name:'醋溜土豆丝', price:3.5, category:['米饭'], diet:['素食'], light:false }
+      ] },
+    { id:'s13', name:'咕噜鱼(汀香园三楼店)', canteenId:'c1', spot:'汀香园 3F', floor:3,
+      avgPrice:26, light:false, tags:['鱼片锅'], openHours:[['10:30', '19:30']],
+      dishes:[
+        { name:'香辣无骨鱼片单人套餐+珍珠米饭', price:24.8, category:['米饭'], diet:[], light:false },
+        { name:'香辣味牛丸鱼丸龙口粉丝煲+珍珠米饭', price:19.99, category:['米饭'], diet:[], light:false },
+        { name:'番茄味无骨鱼片套餐+珍珠米饭', price:25.8, category:['米饭'], diet:[], light:false },
+        { name:'香辣猪肉片锅单人套餐+珍珠米饭', price:23.99, category:['米饭'], diet:[], light:false },
+        { name:'酸菜口味无骨鱼片套餐+珍珠米饭', price:28.88, category:['米饭'], diet:[], light:false },
+        { name:'酱香味无骨鱼单人套餐+珍珠米饭', price:26.9, category:['米饭'], diet:[], light:false },
+        { name:'藤椒味无骨鱼片单人套餐(中份)+珍珠米饭', price:39.8, category:['米饭'], diet:[], light:false },
+        { name:'香辣味无骨鱼片单人套餐(中份)+珍珠米饭', price:29.88, category:['米饭'], diet:[], light:false },
+        { name:'番茄味无骨鱼片单人套餐(中份)+珍珠米饭', price:29.88, category:['米饭'], diet:[], light:false }
+      ] },
+    { id:'s14', name:'金牌隆江猪脚饭(甘怡园三店)', canteenId:'c2', spot:'甘怡园 3F', floor:3,
+      avgPrice:17, light:false, tags:['猪脚饭'], openHours:[['10:30', '19:30']],
+      dishes:[
+        { name:'招牌隆江猪脚饭+秘制酸菜+素菜', price:15.88, category:['米饭'], diet:[], light:false },
+        { name:'五花肉拼叉烧', price:20.88, category:['米饭'], diet:[], light:false },
+        { name:'猪耳朵饭+酸菜', price:17.88, category:['米饭'], diet:[], light:false },
+        { name:'鸡腿饭+秘制酸菜+素菜', price:14.88, category:['米饭'], diet:[], light:false },
+        { name:'猪脚拼五花肉', price:20.88, category:['米饭'], diet:[], light:false },
+        { name:'秘制五花肉饭+秘制酸菜+素菜', price:15.88, category:['米饭'], diet:[], light:false },
+        { name:'港式肉卷饭+秘制酸菜+素菜', price:14.88, category:['米饭'], diet:[], light:false },
+        { name:'三拼饭任选三种+秘制酸菜+素菜', price:17.53, category:['米饭'], diet:[], light:false },
+        { name:'港式烧鸭饭+秘制酸菜+素菜', price:15.88, category:['米饭'], diet:[], light:false },
+        { name:'港式白切鸡饭+秘制酸菜+素菜', price:15.88, category:['米饭'], diet:[], light:false }
+      ] },
+    { id:'s15', name:'意见达·意面披萨·能量轻食(甘怡园)', canteenId:'c2', spot:'甘怡园', floor:null,
+      avgPrice:21, light:true, tags:['轻食'], openHours:[['10:30', '19:30']],
+      dishes:[
+        { name:'橄榄油风味鸡胸肉酱意面', price:20.9, category:['面食', '轻食'], diet:[], light:true },
+        { name:'黑椒肉柳风味意面', price:20.9, category:['面食', '轻食'], diet:[], light:true },
+        { name:'番茄红烩鸡丁意面', price:19.9, category:['面食', '轻食'], diet:[], light:true },
+        { name:'椒香胸排肉酱意面', price:20.9, category:['面食', '轻食'], diet:[], light:true },
+        { name:'橄榄油风味鸡胸能量碗', price:21.9, category:['米饭', '轻食'], diet:[], light:true },
+        { name:'黑椒肉柳能量碗', price:22.9, category:['米饭', '轻食'], diet:[], light:true },
+        { name:'椒香胸排能量碗', price:22.9, category:['米饭', '轻食'], diet:[], light:true }
+      ] },
+    { id:'s16', name:'湘式盖码(汀香园三楼店)', canteenId:'c1', spot:'汀香园 3F', floor:3,
+      avgPrice:6, light:false, tags:['盖码'], openHours:[['10:30', '19:30']],
+      dishes:[
+        { name:'辣椒炒肉', price:5.88, category:['米饭'], diet:[], light:false },
+        { name:'土豆片炒肉', price:4.88, category:['米饭'], diet:[], light:false },
+        { name:'清蒸冬瓜', price:3.88, category:['米饭'], diet:['素食'], light:false },
+        { name:'红烧肉', price:8.68, category:['米饭'], diet:[], light:false },
+        { name:'牛腩烧土豆', price:8.98, category:['米饭'], diet:[], light:false }
+      ] },
+    { id:'s17', name:'麻辣香锅冒菜(甘怡园二店)', canteenId:'c2', spot:'甘怡园 2F', floor:2,
+      avgPrice:20, priceRange:[15, 25], light:false, noDish:true, tags:['麻辣烫', '麻辣香锅'],
+      openHours:[['10:30', '19:30']],
+      dishes:[] },
+    // 早市档口：06:00–12:30，午后不参与「只看现在营业的」抽取。
+    { id:'s18', name:'粥吧(甘饴园一店)', canteenId:'c2', spot:'甘怡园', floor:null,
+      avgPrice:4.9, light:false, tags:['汤粥'], openHours:[['06:00', '12:30']],
+      dishes:[
+        { name:'皮蛋瘦肉粥', price:5.8, category:['汤粥'], diet:[], light:false },
+        { name:'青菜瘦肉粥', price:4.8, category:['汤粥'], diet:[], light:false },
+        { name:'小米南瓜粥', price:4.8, category:['汤粥'], diet:[], light:false },
+        { name:'黑米粥', price:4.8, category:['汤粥'], diet:[], light:false },
+        { name:'绿豆粥', price:4.8, category:['汤粥'], diet:[], light:false },
+        { name:'燕麦牛奶粥', price:5.5, category:['汤粥'], diet:[], light:false },
+        { name:'八宝粥', price:4.5, category:['汤粥'], diet:[], light:false },
+        { name:'银耳红枣汤', price:4.8, category:['汤粥'], diet:[], light:false },
+        { name:'燕麦葡萄粥', price:4.8, category:['汤粥'], diet:[], light:false },
+        { name:'黑米牛奶粥', price:4.8, category:['汤粥'], diet:[], light:false },
+        { name:'紫薯粥', price:4.8, category:['汤粥'], diet:[], light:false },
+        { name:'红绿双豆粥', price:4.8, category:['汤粥'], diet:[], light:false },
+        { name:'绿豆汤冰', price:4.5, category:['汤粥'], diet:[], light:false }
+      ] },
+    { id:'s19', name:'律食魔方(汀香园二楼店)', canteenId:'c1', spot:'汀香园 2F', floor:2,
+      avgPrice:18.3, light:true, tags:['轻食'], openHours:[['10:30', '19:30']],
+      dishes:[
+        { name:'荔枝年糕鸡+两个小菜+米饭', price:15.8, category:['米饭', '轻食'], diet:[], light:true },
+        { name:'香辣手撕鸡+两个小菜+米饭', price:15.9, category:['米饭', '轻食'], diet:[], light:true },
+        { name:'增肌最爱鸡胸套餐', price:17, category:['米饭', '轻食'], diet:[], light:true },
+        { name:'香烤鸡腿套餐', price:17, category:['米饭', '轻食'], diet:[], light:true },
+        { name:'去骨鸡腿排套餐', price:19, category:['米饭', '轻食'], diet:[], light:true },
+        { name:'牛肉拼黑鸭煲+两个小菜+米饭', price:18.8, category:['米饭', '轻食'], diet:[], light:true },
+        { name:'烤鸭胸肉套餐', price:17, category:['米饭', '轻食'], diet:[], light:true },
+        { name:'手撕鸡拼卤肉+两个小菜+米饭', price:17, category:['米饭', '轻食'], diet:[], light:true },
+        { name:'鸡胸拼鸭胸套餐', price:18, category:['米饭', '轻食'], diet:[], light:true },
+        { name:'龙利鱼套餐', price:21, category:['米饭', '轻食'], diet:[], light:true },
+        { name:'黑鸭拼酱骨+小菜+米饭', price:18.8, category:['米饭', '轻食'], diet:[], light:true },
+        { name:'可乐鸡翅腿+小菜+米饭', price:18, category:['米饭', '轻食'], diet:[], light:true },
+        { name:'孜然烤香鸡+小菜+米饭', price:15.9, category:['米饭', '轻食'], diet:[], light:true },
+        { name:'自选双拼+两个小菜+米饭', price:18.8, category:['米饭', '轻食'], diet:[], light:true },
+        { name:'烤香鸡拼卤肉+两个小菜+米饭', price:17, category:['米饭', '轻食'], diet:[], light:true },
+        { name:'超大鸭边腿套餐', price:19, category:['米饭', '轻食'], diet:[], light:true },
+        { name:'香煎猪排套餐', price:19, category:['米饭', '轻食'], diet:[], light:true },
+        { name:'法式烤鸭排套餐', price:19, category:['米饭', '轻食'], diet:[], light:true },
+        { name:'鸭胸拼龙利鱼套餐', price:22, category:['米饭', '轻食'], diet:[], light:true },
+        { name:'鸡胸拼龙利鱼套餐', price:22, category:['米饭', '轻食'], diet:[], light:true }
+      ] },
+    { id:'s20', name:'手工鲜肉包(汀香园二店)', canteenId:'c1', spot:'汀香园 2F', floor:2,
+      avgPrice:2.4, light:false, tags:['面食'], openHours:[['06:00', '12:30']],
+      dishes:[
+        { name:'手工鲜肉包', price:2.68, category:['面食'], diet:[], light:false },
+        { name:'手工香菇肉包', price:2.68, category:['面食'], diet:[], light:false },
+        { name:'手工麻辣肉包', price:2.68, category:['面食'], diet:[], light:false },
+        { name:'手工大肉包', price:3.68, category:['面食'], diet:[], light:false },
+        { name:'擂辣椒皮蛋包', price:2.18, category:['面食'], diet:[], light:false },
+        { name:'麻辣豆腐包', price:2.18, category:['面食'], diet:[], light:false },
+        { name:'粉丝包', price:2.18, category:['面食'], diet:[], light:false },
+        { name:'酸菜包', price:2.18, category:['面食'], diet:[], light:false },
+        { name:'豆沙小馒头', price:1.68, category:['面食'], diet:[], light:false },
+        { name:'手工白馒头', price:1.68, category:['面食'], diet:[], light:false },
+        { name:'手工纸皮烧麦', price:2.18, category:['面食'], diet:[], light:false }
+      ] }
+  ];
+
+  const LS = {
+    prefs:'canteenBox.preferences',
+    history:'canteenBox.history',
+    favorites:'canteenBox.favorites',
+    settings:'canteenBox.settings',
+    last:'canteenBox.last',
+    coords:'canteenBox.coords',
+    ui:'canteenBox.ui'
+  };
+
+  const BUDGET_LABEL = { b10:'10 元以内', b15:'10-15 元', b25:'15-25 元', b25p:'25 元以上' };
+
+  /* ============================================================
+   * 工具函数
+   * ============================================================ */
+
+  const $ = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+
+  function esc(v){
+    return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+  }
+
+  function store(id){ return STORES.find(s => s.id === id) || null; }
+  function canteen(id){ return CANTEENS.find(c => c.id === id) || null; }
+  function canteenName(id){ const c = canteen(id); return c ? c.name : '未知食堂'; }
+
+  function copyText(text){
+    const done = () => toast('已复制：' + text);
+    const fallback = () => {
+      try{
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.top = '-1000px';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        const ok = document.execCommand('copy');
+        ta.remove();
+        if (ok) done(); else toast('复制失败，请手动记录档口位置');
+      }catch(e){ toast('复制失败，请手动记录档口位置'); }
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } else {
+      fallback();
+    }
+  }
+
+  function readJSON(key, fallback){
+    try{
+      const raw = localStorage.getItem(key);
+      if (!raw) return fallback;
+      const val = JSON.parse(raw);
+      return val == null ? fallback : val;
+    }catch(e){ return fallback; }
+  }
+  function writeJSON(key, val){
+    try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){}
+  }
+
+  function haversine(a, b){
+    const R = 6371000, rad = d => d * Math.PI / 180;
+    const dLat = rad(b.lat - a.lat), dLng = rad(b.lng - a.lng);
+    const h = Math.sin(dLat/2) ** 2 +
+              Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng/2) ** 2;
+    return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+  }
+
+  function walkMinutes(storeObj, pos){
+    if (!pos) return null;
+    const target = (typeof storeObj.lat === 'number' && typeof storeObj.lng === 'number')
+      ? storeObj
+      : canteen(storeObj.canteenId);
+    if (!target) return null;
+    const meters = haversine(pos, { lat:target.lat, lng:target.lng });
+    return Math.max(1, Math.round(meters * 1.3 / 80));
+  }
+
+  function toMinutes(hhmm){
+    const p = String(hhmm).split(':');
+    return (Number(p[0]) || 0) * 60 + (Number(p[1]) || 0);
+  }
+
+  function isOpenNow(storeObj, now){
+    const cur = now.getHours() * 60 + now.getMinutes();
+    return (storeObj.openHours || []).some(range => {
+      if (!Array.isArray(range) || range.length < 2) return false;
+      const start = toMinutes(range[0]), end = toMinutes(range[1]);
+      return end >= start ? (cur >= start && cur <= end) : (cur >= start || cur <= end);
+    });
+  }
+
+  /* ------------------------------------------------------------
+   * 时间读取：统一使用设备本地时间（new Date()），
+   * 顶部时钟、营业状态、抽取筛选三者共用同一时间源。
+   * ------------------------------------------------------------ */
+  function pad2(n){ return String(n).padStart(2, '0'); }
+  function fmtClock(now){ return pad2(now.getHours()) + ':' + pad2(now.getMinutes()); }
+  function fmtMinutes(m){ return pad2(Math.floor(m / 60)) + ':' + pad2(m % 60); }
+
+  function deviceZone(now){
+    const off = -now.getTimezoneOffset();
+    const sign = off < 0 ? '-' : '+';
+    const h = Math.floor(Math.abs(off) / 60);
+    const m = Math.abs(off) % 60;
+    return 'UTC' + sign + h + (m ? ':' + pad2(m) : '');
+  }
+
+  function openState(storeObj, now){
+    const t = now || new Date();
+    const cur = t.getHours() * 60 + t.getMinutes();
+    const ranges = (storeObj.openHours || [])
+      .filter(r => Array.isArray(r) && r.length >= 2)
+      .map(r => ({ start:toMinutes(r[0]), end:toMinutes(r[1]) }));
+
+    if (!ranges.length){
+      return { open:false, known:false, text:'营业时间未录入', next:null };
+    }
+
+    const current = ranges.find(r => r.end >= r.start
+      ? (cur >= r.start && cur <= r.end)
+      : (cur >= r.start || cur <= r.end));
+    if (current){
+      return { open:true, known:true, text:'营业中 · ' + fmtMinutes(current.end) + ' 打烊', next:null };
+    }
+
+    const upcoming = ranges
+      .filter(r => r.start > cur)
+      .sort((a, b) => a.start - b.start)[0];
+    if (upcoming){
+      return { open:false, known:true, text:'已打烊 · ' + fmtMinutes(upcoming.start) + ' 开门', next:upcoming.start };
+    }
+
+    const first = ranges.slice().sort((a, b) => a.start - b.start)[0];
+    return { open:false, known:true, text:'今日已打烊 · 明日 ' + fmtMinutes(first.start) + ' 开门', next:first.start + 1440 };
+  }
+
+  function nextOpeningText(now){
+    const cur = now.getHours() * 60 + now.getMinutes();
+    let best = null;
+    STORES.forEach(s => (s.openHours || []).forEach(r => {
+      if (!Array.isArray(r) || r.length < 2) return;
+      const start = toMinutes(r[0]);
+      if (start > cur && (best == null || start < best)) best = start;
+    }));
+    return best != null ? fmtMinutes(best) + ' 开门' : '明日 06:00 开门';
+  }
+
+  let clockTimer = null;
+
+  function renderTime(){
+    const now = new Date();
+    const clockNow = $('#clockNow');
+    if (!clockNow) return;
+
+    clockNow.textContent = fmtClock(now);
+    $('#clockDate').textContent = (now.getMonth() + 1) + '月' + now.getDate() + '日 · 周' + '日一二三四五六'.charAt(now.getDay());
+    $('#clockZone').textContent = '设备时间 · ' + deviceZone(now);
+
+    const cur = now.getHours() * 60 + now.getMinutes();
+    const open = STORES.filter(s => isOpenNow(s, now));
+    const c1 = open.filter(s => s.canteenId === 'c1').length;
+    const c2 = open.filter(s => s.canteenId === 'c2').length;
+
+    $('#timeCard').classList.toggle('is-closed', open.length === 0);
+    $('#clockDot').classList.toggle('on', open.length > 0);
+
+    if (open.length){
+      $('#clockState').textContent = '营业中';
+      const closing = open
+        .map(s => (s.openHours || []).map(r => toMinutes(r[1])))
+        .reduce((a, b) => a.concat(b), [])
+        .filter(m => m >= cur)
+        .sort((a, b) => a - b)[0];
+      $('#clockNext').textContent = closing != null ? '最早 ' + fmtMinutes(closing) + ' 打烊' : '';
+      $('#clockSub').textContent = '汀香园 ' + c1 + ' 家 / 甘怡园 ' + c2 + ' 家营业 · 共 ' + open.length + ' 家可选';
+    } else {
+      $('#clockState').textContent = '已打烊';
+      $('#clockNext').textContent = '';
+      $('#clockSub').textContent = '现在没有档口营业 · ' + nextOpeningText(now);
+    }
+
+    const hint = $('#openHint');
+    if (hint){
+      hint.textContent = open.length
+        ? '现在 ' + fmtClock(now) + ' · ' + open.length + ' 家营业中'
+        : '现在 ' + fmtClock(now) + ' · 全部打烊';
+    }
+    const fab = $('#fabTime');
+    if (fab) fab.textContent = fmtClock(now);
+  }
+
+  function startClock(){
+    renderTime();
+    if (clockTimer) clearInterval(clockTimer);
+    clockTimer = setInterval(renderTime, 5000);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) renderTime();
+    });
+  }
+
+  function priceLabel(s){
+    if (s && Array.isArray(s.priceRange) && s.priceRange.length === 2){
+      return '人均 ¥' + s.priceRange[0] + '-' + s.priceRange[1];
+    }
+    return '人均约 ¥' + (s ? s.avgPrice : '');
+  }
+
+  function nearestCanteen(pos){
+    let nearest = CANTEENS[0], best = Infinity;
+    CANTEENS.forEach(c => {
+      const d = haversine(pos, c);
+      if (d < best){ best = d; nearest = c; }
+    });
+    return nearest;
+  }
+
+
+  /* ============================================================
+   * 状态
+   * ============================================================ */
+
+  const state = {
+    locationMode:'c1',
+    userPos:null,
+    locationNotice:'',
+    hard:{ exclude:[], budget:null, lightMode:null, openOnly:true },
+    soft:{ fresh:true },
+    session:new Set(),
+    banned:new Set(),
+    settings:{ animation:true, sound:false, seen:false },
+    history:[],
+    favorites:[],
+    lastResult:null,
+    busy:false
+  };
+
+  function loadAll(){
+    const prefs = readJSON(LS.prefs, {});
+    if (prefs.hard && typeof prefs.hard === 'object'){
+      const h = prefs.hard;
+      const allowed = $$('[data-group="exclude"] .chip').map(c => c.dataset.value);
+      state.hard.exclude = Array.isArray(h.exclude)
+        ? h.exclude.filter(v => typeof v === 'string' && allowed.includes(v))
+        : [];
+      const totalChips = allowed.length;
+      if (totalChips > 0 && state.hard.exclude.length >= totalChips){
+        state.hard.exclude = state.hard.exclude.slice(0, totalChips - 1);
+      }
+      state.hard.budget = BUDGET_LABEL[h.budget] ? h.budget : null;
+      state.hard.lightMode = h.lightMode === 'light' ? 'light' : null;
+      state.hard.openOnly = h.openOnly !== false;
+    }
+    if (prefs.soft && typeof prefs.soft === 'object'){
+      state.soft.fresh = prefs.soft.fresh !== false;
+    }
+
+    const savedCoords = readJSON(LS.coords, null);
+    if (savedCoords && typeof savedCoords === 'object'){
+      CANTEENS.forEach(c => {
+        const p = savedCoords[c.id];
+        if (p && isFinite(p.lat) && isFinite(p.lng)){
+          c.lat = Number(p.lat);
+          c.lng = Number(p.lng);
+        }
+      });
+    }
+
+    if (prefs.locationMode === 'c1' || prefs.locationMode === 'c2' || prefs.locationMode === 'nearest'){
+      state.locationMode = prefs.locationMode;
+    }
+    const st = readJSON(LS.settings, {});
+    if (typeof st.animation === 'boolean') state.settings.animation = st.animation;
+    if (typeof st.sound === 'boolean') state.settings.sound = st.sound;
+    if (typeof st.seen === 'boolean') state.settings.seen = st.seen;
+
+    const history = readJSON(LS.history, []);
+    const favorites = readJSON(LS.favorites, []);
+    state.history = Array.isArray(history) ? history : [];
+    state.favorites = Array.isArray(favorites) ? favorites : [];
+    state.lastResult = readJSON(LS.last, null);
+  }
+
+  function savePrefs(){
+    syncRound();
+    writeJSON(LS.prefs, {
+      hard: state.hard,
+      soft: state.soft,
+      locationMode: state.locationMode
+    });
+  }
+  function saveSettings(){ writeJSON(LS.settings, state.settings); }
+
+  /* ============================================================
+   * 筛选逻辑
+   * ============================================================ */
+
+  function inBudget(price, budget){
+    if (!budget) return true;
+    if (budget === 'b10') return price <= 10;
+    if (budget === 'b15') return price > 10 && price <= 15;
+    if (budget === 'b25') return price > 15 && price <= 25;
+    if (budget === 'b25p') return price > 25;
+    return true;
+  }
+
+  function dishMatches(dish, opts){
+    const o = opts || {};
+    const exclude = Array.isArray(o.exclude) ? o.exclude : [];
+    if (exclude.length && (dish.category || []).some(c => exclude.includes(c))) return false;
+    if (!inBudget(dish.price, o.budget)) return false;
+    if (o.lightMode && !dish.light) return false;
+    return true;
+  }
+
+  function dishesFor(s, opts){
+    return (s.dishes || []).filter(d => dishMatches(d, opts));
+  }
+
+  function filterPool(opts){
+    const now = opts.now || new Date();
+    return STORES.filter(s => {
+      if (s.canteenId !== opts.canteenId) return false;
+      if (opts.lightMode && !s.light) return false;
+      if (opts.openOnly && !isOpenNow(s, now)) return false;
+      if (s.noDish){
+        const exclude = Array.isArray(opts.exclude) ? opts.exclude : [];
+        if (exclude.some(c => (s.tags || []).includes(c))) return false;
+        return inBudget(s.avgPrice, opts.budget);
+      }
+      return dishesFor(s, opts).length > 0;
+    });
+  }
+
+  function weightOf(s, ctx){
+    let w = 1;
+
+    if (ctx.userPos){
+      const m = walkMinutes(s, ctx.userPos);
+      if (m != null) w *= 1 / (1 + (m * 80 / 1.3) / 300);
+    }
+
+    if (ctx.fresh){
+      const days = daysSinceStore(s.id);
+      if (days != null && days < 3) w *= 0.3;
+    }
+
+    if (state.favorites.includes(s.id)) w *= 1.2;
+    if (ctx.session.has(s.id)) w *= 0.15;
+    return w;
+  }
+
+  function daysSinceStore(id){
+    const rec = state.history.find(h => h.storeId === id);
+    if (!rec) return null;
+    const t = new Date(rec.time).getTime();
+    if (!isFinite(t)) return null;
+    return (Date.now() - t) / 86400000;
+  }
+
+  function roulette(list){
+    const total = list.reduce((sum, x) => sum + x.w, 0);
+    if (total <= 0) return list[Math.floor(Math.random() * list.length)];
+    let r = Math.random() * total;
+    for (const item of list){
+      r -= item.w;
+      if (r <= 0) return item;
+    }
+    return list[list.length - 1];
+  }
+
+  function pickDish(s, opts){
+    const list = dishesFor(s, opts);
+    if (!list.length) return null;
+    const weighted = list.map(d => ({ d, w: d.light ? 1.2 : 1 }));
+    return roulette(weighted).d;
+  }
+
+  function drawOnce(canteenId, excludeId){
+    const opts = {
+      canteenId,
+      exclude: state.hard.exclude.slice(),
+      budget: state.hard.budget,
+      lightMode: state.hard.lightMode,
+      openOnly: state.hard.openOnly,
+      userPos: state.userPos,
+      now: new Date()
+    };
+
+    const eligible = filterPool(opts);
+    if (!eligible.length) return explainEmptyPool(opts);
+    const available = eligible.filter(s => !state.banned.has(s.id));
+    if (!available.length){
+      return { store:null, notice:'这一轮已经换完了。可以保留条件，重新开始一轮。', action:'restart' };
+    }
+    const pool = available.filter(s => s.id !== excludeId);
+    if (!pool.length){
+      const notice = eligible.length === 1
+        ? '当前条件下只有一家档口，没有另一家可以抽。可以修改筛选或换个食堂。'
+        : '本轮只剩当前这家，其他档口已被排除。可以重新开始一轮。';
+      return { store:null, notice, action:eligible.length > 1 ? 'restart' : null };
+    }
+
+    const ctx = {
+      budget: opts.budget, userPos: opts.userPos, fresh: state.soft.fresh,
+      session: state.session
+    };
+    const picked = roulette(pool.map(s => ({ s, w: weightOf(s, ctx) }))).s;
+    const dish = pickDish(picked, opts);
+    return {
+      store: picked, dish, opts, pool,
+      notice: opts.openOnly ? '' : '未筛选当前营业的档口，出发前请确认营业时间。',
+      reason: makeReason(picked, dish, pool, ctx)
+    };
+  }
+
+  function explainEmptyPool(opts){
+    const fail = (notice, action) => ({ store:null, notice, action });
+    const anyHours = { ...opts, openOnly:false };
+    if (opts.openOnly && filterPool(anyHours).length){
+      const now = opts.now || new Date();
+      const t = fmtClock(now);
+      const canteenHasOpen = STORES.some(s => s.canteenId === opts.canteenId && isOpenNow(s, now));
+      return fail(canteenHasOpen
+        ? '现在 ' + t + '，这家食堂里符合其他条件的档口都已打烊。可放开营业筛选看看其他档口。'
+        : '现在 ' + t + '，这家食堂的档口都已打烊（早市 06:00–12:30，其余 10:30–19:30）。可先看看其他时段的档口。',
+      'showAllHours');
+    }
+    const base = { ...anyHours, budget:null, exclude:[], lightMode:null };
+    if (!filterPool(base).length) return fail('这家食堂暂时没有录入可抽的档口，试试另一家食堂。');
+
+    const lightBase = { ...base, lightMode:opts.lightMode };
+    if (opts.lightMode && !filterPool(lightBase).length){
+      const other = CANTEENS.find(c => c.id !== opts.canteenId &&
+        filterPool({ ...lightBase, canteenId:c.id }).length);
+      return fail(other
+        ? '当前食堂没有轻食档口，' + other.name + '有轻食可选。可以切换食堂。'
+        : '当前食堂没有录入轻食餐，可以取消「只要轻食」试试。');
+    }
+    const blockers = [];
+    if (opts.budget && !filterPool({ ...lightBase, budget:opts.budget }).length){
+      blockers.push('这一档预算内没有可抽的菜');
+    }
+    if (opts.exclude.length && !filterPool({ ...lightBase, exclude:opts.exclude }).length){
+      blockers.push('「今天不想吃」排除了所有候选');
+    }
+    if (blockers.length) return fail(blockers.join('；') + '。可调整相应条件再试。');
+    return fail('预算和「今天不想吃」同时生效后没有符合的菜，可以调整其中一项。');
+  }
+
+  function makeReason(s, dish, pool, ctx){
+    const parts = [];
+
+    if (ctx.userPos){
+      const mine = walkMinutes(s, ctx.userPos);
+      if (mine != null){
+        const all = pool.map(x => walkMinutes(x, ctx.userPos)).filter(x => x != null).sort((a,b) => a-b);
+        if (all.length){
+          const fastPart = all.slice(0, Math.max(1, Math.ceil(all.length * 0.5)));
+          if (fastPart.includes(mine)) parts.push('离你最近的一批档口，步行约 ' + mine + ' 分钟');
+        }
+      }
+    }
+
+    if (ctx.budget){
+      parts.push(dish
+        ? ('这份 ¥' + dish.price + ' 落在你的预算里')
+        : (priceLabel(s) + '，在你的预算里'));
+    }
+    if (ctx.fresh){
+      const d = daysSinceStore(s.id);
+      if (d == null || d >= 3) parts.push('最近没怎么吃过这家');
+    }
+    if (dish && dish.light) parts.push('这道偏轻食，负担小一点');
+    if (s.noDish) parts.push('自选配菜，按自己的口味配');
+    if ((s.tags || []).includes('招牌')) parts.push('这家是档口的招牌');
+    if (state.favorites.includes(s.id)) parts.push('你收藏过这家');
+
+    if (!parts.length) parts.push('今天就它了，换个口味也不错');
+    return parts.slice(0, 2).join('，') + '。';
+  }
+
+  /* ============================================================
+   * 渲染：筛选回显 / 位置 / 历史 / 上次结果
+   * ============================================================ */
+
+  function syncChipsFromState(){
+    $$('[data-group]', $('#filterCard')).forEach(groupEl => {
+      const key = groupEl.dataset.group;
+      const mode = groupEl.dataset.mode;
+      const val = state.hard[key] !== undefined ? state.hard[key] : state.soft[key];
+      $$('.chip', groupEl).forEach(chip => {
+        const v = chip.dataset.value;
+        let on;
+        if (mode === 'multi') on = Array.isArray(val) && val.includes(v);
+        else on = val === v;
+        chip.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+    });
+    $('#swOpen').checked = !!state.hard.openOnly;
+    $('#swFresh').checked = !!state.soft.fresh;
+    $('#swAnim').checked = !!state.settings.animation;
+    $('#swSound').checked = !!state.settings.sound;
+  }
+
+  function renderSelected(){
+    const strip = $('#selectedStrip');
+    const tags = [];
+    const tag = (key, label, value) => key
+      ? '<span class="sel-tag" data-clear="' + key + '" role="button" title="移除这个条件"><b>' + label + '</b>' + value + '<i class="sel-x" aria-hidden="true">×</i></span>'
+      : '<span class="sel-tag"><b>' + label + '</b>' + value + '</span>';
+
+    const hasFilter = state.hard.exclude.length || state.hard.budget ||
+      state.hard.lightMode;
+
+    if (hasFilter || state.locationMode === 'nearest'){
+      const id = resolveCanteen();
+      const locName = id ? canteenName(id) : '最近（待定位）';
+      tags.push(tag(null, '食堂', esc(locName) + (id && state.locationMode === 'nearest' ? '（最近）' : '')));
+    }
+
+    if (state.hard.exclude.length){
+      tags.push(tag('exclude', '不吃', esc(state.hard.exclude.join('、'))));
+    }
+    if (state.hard.budget) tags.push(tag('budget', '预算', esc(BUDGET_LABEL[state.hard.budget])));
+    if (state.hard.lightMode) tags.push(tag('lightMode', '只要', '轻食减脂'));
+
+    strip.innerHTML = tags.join('');
+  }
+
+  function shopCount(id){
+    return STORES.filter(s => s.canteenId === id).length;
+  }
+
+  function canteenMeta(id){
+    const c = canteen(id);
+    return (c ? c.floors : '?') + ' 层 · ' + shopCount(id) + ' 家档口';
+  }
+
+  function renderLocation(){
+    $$('input[name="loc"]', $('#locGroup')).forEach(input => {
+      input.checked = input.value === state.locationMode;
+    });
+
+    const needPos = $('#nearestMeta');
+    if (state.userPos){
+      const list = CANTEENS.map(c => {
+        const meters = haversine(state.userPos, { lat:c.lat, lng:c.lng });
+        return { name:c.name, meters, m: Math.max(1, Math.round(meters * 1.3 / 80)) };
+      }).sort((a,b) => a.meters - b.meters);
+
+      if (list[0].meters > COORD_ALERT_METERS){
+        needPos.textContent = '定位成功，但食堂坐标不在你所在校区';
+        $('#c1Meta').textContent = canteenMeta('c1');
+        $('#c2Meta').textContent = canteenMeta('c2');
+        $('#locHint').textContent = '当前位置距最近的食堂约 ' + (list[0].meters / 1000).toFixed(1) + ' 公里，已保留手动选择。';
+        return;
+      }
+
+      const c1 = list.find(x => x.name === canteenName('c1')) || { m:'-' };
+      const c2 = list.find(x => x.name === canteenName('c2')) || { m:'-' };
+      needPos.textContent = '最近的是 ' + list[0].name + '，步行约 ' + list[0].m + ' 分钟';
+      $('#c1Meta').textContent = '步行约 ' + c1.m + ' 分钟 · ' + shopCount('c1') + ' 家档口';
+      $('#c2Meta').textContent = '步行约 ' + c2.m + ' 分钟 · ' + shopCount('c2') + ' 家档口';
+      $('#locHint').textContent = state.locationMode === 'nearest'
+        ? '已定位：当前最近的食堂是' + list[0].name + '（步行约 ' + list[0].m + ' 分钟）。'
+        : '已定位：' + canteenName('c1') + '约 ' + c1.m + ' 分钟，' + canteenName('c2') + '约 ' + c2.m + ' 分钟。';
+      return;
+    }
+
+    needPos.textContent = '需要定位后自动判断';
+    $('#c1Meta').textContent = canteenMeta('c1');
+    $('#c2Meta').textContent = canteenMeta('c2');
+    $('#locHint').textContent = state.locationNotice || '直接选食堂就能抽；选「最近」时需要定位。';
+  }
+
+  function renderLastResult(){
+    const box = $('#lastResult');
+    const lr = state.lastResult;
+    if (!lr || !lr.storeId){
+      box.hidden = true;
+      return;
+    }
+    const s = store(lr.storeId);
+    if (!s){ box.hidden = true; return; }
+    box.hidden = false;
+    $('#lrAvatar').textContent = String(s.name || '?').slice(0, 1);
+    $('#lrName').textContent = lr.dishName || s.name;
+    const lrParts = [];
+    if (lr.dishName) lrParts.push(s.name);
+    lrParts.push(s.spot || '校内档口');
+    if (lr.dishPrice) lrParts.push('¥' + lr.dishPrice);
+    $('#lrMeta').textContent = lrParts.join(' · ');
+  }
+
+  function renderHistory(){
+    const body = $('#historyBody');
+    if (!state.history.length){
+      body.innerHTML = '<div class="empty">还没有抽取记录，去抽一个吧。</div>';
+      return;
+    }
+    body.innerHTML = state.history.map(h => {
+      const s = store(h.storeId);
+      const name = h.dishName || (s ? s.name : (h.storeName || '已下架的店铺'));
+      const metaParts = [];
+      if (h.dishName){
+        metaParts.push(h.storeName || (s ? s.name : ''));
+        if (h.dishPrice) metaParts.push('¥' + h.dishPrice);
+        metaParts.push(h.canteenName || (s ? canteenName(s.canteenId) : ''));
+      } else {
+        metaParts.push((s && s.spot) || h.canteenName || (s ? canteenName(s.canteenId) : ''));
+      }
+      const meta = metaParts.filter(Boolean).join(' · ');
+      const d = new Date(h.time);
+      const time = isFinite(d.getTime())
+        ? (d.getMonth() + 1) + '月' + d.getDate() + '日 ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0')
+        : '';
+      return '<div class="history-item">' +
+        '<div class="hi-time">' + esc(time) + '</div>' +
+        '<div><div class="hi-name">' + esc(name) + '</div><div class="hi-meta">' + esc(meta) + '</div>' + filterSnapshot(h) + '</div>' +
+        '</div>';
+    }).join('');
+  }
+
+  function filterSnapshot(h){
+    const f = (h && h.filters) || {};
+    const parts = [];
+    if (Array.isArray(f.exclude) && f.exclude.length) parts.push('不吃 ' + f.exclude.join('、'));
+    if (f.budget && BUDGET_LABEL[f.budget]) parts.push(BUDGET_LABEL[f.budget]);
+    if (f.lightMode) parts.push('只要轻食');
+    if (!parts.length) return '';
+    return '<div class="history-filter">' + parts.map(x => '<span>' + esc(x) + '</span>').join('') + '</div>';
+  }
+
+  function renderFavorites(){
+    const body = $('#favBody');
+    if (!state.favorites.length){
+      body.innerHTML = '<div class="empty">还没有收藏的档口。<br>抽到喜欢的，点一下「收藏」就会出现在这里。</div>';
+      return;
+    }
+    const list = state.favorites.map(id => {
+      const s = store(id);
+      if (!s) return '';
+      const sample = (s.dishes || [])[0];
+      const meta = [s.spot || canteenName(s.canteenId), sample ? sample.name : '']
+        .filter(Boolean).join(' · ');
+      return '<div class="fav-item">' +
+        '<div class="fav-avatar">' + esc(String(s.name).slice(0, 1)) + '</div>' +
+        '<div class="fav-main">' +
+          '<div class="fav-name">' + esc(s.name) + '</div>' +
+          '<div class="fav-meta">' + esc(meta) + '</div>' +
+        '</div>' +
+        '<button class="fav-remove" data-fav-remove="' + esc(id) + '" aria-label="移除 ' + esc(s.name) + '">移除</button>' +
+      '</div>';
+    }).filter(Boolean).join('');
+    body.innerHTML = list || '<div class="empty">收藏的档口已下架。</div>';
+  }
+
+  /* ============================================================
+   * toast
+   * ============================================================ */
+
+  let toastTimer = null;
+  function toast(msg){
+    const el = $('#toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2400);
+  }
+
+  function announce(msg){
+    const el = $('#srLive');
+    el.textContent = '';
+    setTimeout(() => { el.textContent = msg; }, 30);
+  }
+
+  /* ============================================================
+   * 定位
+   * ============================================================ */
+
+  let locating = false;
+  function locate(){
+    return new Promise(resolve => {
+      if (locating){ resolve(null); return; }
+      const fail = message => {
+        state.userPos = null;
+        state.locationNotice = message;
+        renderLocation();
+        renderSelected();
+        savePrefs();
+        toast(message);
+        resolve(null);
+      };
+      if (!navigator.geolocation){
+        fail('当前浏览器无法定位，请直接选择汀香园或甘怡园。');
+        return;
+      }
+      locating = true;
+
+      const btn = $('#btnLocate');
+      btn.disabled = true;
+      btn.classList.add('loading');
+      btn.textContent = '定位中…';
+
+      const done = () => {
+        locating = false;
+        btn.disabled = false;
+        btn.classList.remove('loading');
+        btn.textContent = '重新定位';
+      };
+
+      navigator.geolocation.getCurrentPosition(
+        p => {
+          const pos = { lat:p.coords.latitude, lng:p.coords.longitude };
+          const nearest = nearestCanteen(pos);
+          const best = haversine(pos, nearest);
+
+          if (!Number.isFinite(best) || best > COORD_ALERT_METERS || p.coords.accuracy > 500){
+            done();
+            fail('当前位置离校区较远或定位不够准确，请直接选择食堂。');
+            return;
+          }
+
+          state.userPos = pos;
+          state.locationNotice = '';
+          savePrefs();
+          renderLocation();
+          renderSelected();
+          toast('定位成功，最近的食堂是' + nearest.name);
+          done();
+          resolve(pos);
+        },
+        err => {
+          const msg = (err && err.code === 1)
+            ? '没有定位权限，请授权后重试，或直接选择食堂。'
+            : '没能获取位置，请重新定位，或直接选择食堂。';
+          done();
+          fail(msg);
+        },
+        { enableHighAccuracy:true, timeout:9000, maximumAge:60000 }
+      );
+    });
+  }
+
+  /* ------------------------------------------------------------
+   * 坐标校准：走到食堂门口，用当前位置覆盖占位坐标
+   * ------------------------------------------------------------ */
+
+  function saveCoords(onlyId){
+    const box = readJSON(LS.coords, {});
+    const target = (box && typeof box === 'object') ? box : {};
+    if (onlyId){
+      const c = canteen(onlyId);
+      if (c) target[onlyId] = { lat:c.lat, lng:c.lng };
+    }
+    writeJSON(LS.coords, target);
+  }
+
+  function isCalibrated(id){
+    const saved = readJSON(LS.coords, null);
+    return !!(saved && saved[id] && isFinite(saved[id].lat) && isFinite(saved[id].lng));
+  }
+
+  function getPosition(){
+    return new Promise(resolve => {
+      if (!navigator.geolocation){
+        toast('当前浏览器不支持定位');
+        resolve(null);
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        p => resolve({ lat:p.coords.latitude, lng:p.coords.longitude }),
+        () => { toast('定位失败，请确认已允许定位权限'); resolve(null); },
+        { enableHighAccuracy:true, timeout:9000, maximumAge:0 }
+      );
+    });
+  }
+
+  function renderCoordPanel(){
+    CANTEENS.forEach(c => {
+      const val = document.getElementById('coordVal_' + c.id);
+      const btn = document.querySelector('[data-calib="' + c.id + '"]');
+      if (val){
+        val.textContent = (isCalibrated(c.id) ? '' : '默认 ') + c.lat.toFixed(5) + ', ' + c.lng.toFixed(5);
+      }
+      if (btn){
+        btn.textContent = isCalibrated(c.id) ? '重新校准' : '用当前位置';
+      }
+    });
+  }
+
+  async function calibrateCanteen(id){
+    const c = canteen(id);
+    if (!c) return;
+    const btn = document.querySelector('[data-calib="' + id + '"]');
+    if (btn){ btn.disabled = true; btn.textContent = '定位中…'; }
+
+    const pos = await getPosition();
+    if (btn) btn.disabled = false;
+    if (!pos){
+      renderCoordPanel();
+      return;
+    }
+
+    c.lat = pos.lat;
+    c.lng = pos.lng;
+    state.userPos = pos;
+    saveCoords(id);
+    renderLocation();
+    renderCoordPanel();
+    renderSelected();
+    toast('已把' + c.name + '校准到当前位置');
+    announce('已校准' + c.name);
+  }
+
+  /* ============================================================
+   * 动画
+   * ============================================================ */
+
+  const PACK_THEMES = {
+    caramel:{
+      pk1:'#ffc48c', pk2:'#ff9a5f', pk3:'#f4742c',
+      'pk-strip1':'#fff0d8', 'pk-strip2':'#ffc48c', 'pk-strip3':'#ff9a5f',
+      'pk-side1':'#d47a3a', 'pk-side2':'#b9632a',
+      'pk-back1':'#e07a3c', 'pk-back2':'#b4521c', 'pk-back3':'#8f3a10',
+      'pk-scrap1':'#ffc48c', 'pk-scrap2':'#f4742c',
+      'pk-shade':'rgba(122,40,4,.26)'
+    },
+    matcha:{
+      pk1:'#bfe39a', pk2:'#8ecb6b', pk3:'#5faf4a',
+      'pk-strip1':'#f2ffe4', 'pk-strip2':'#bfe39a', 'pk-strip3':'#8ecb6b',
+      'pk-side1':'#4d8f3d', 'pk-side2':'#3a7030',
+      'pk-back1':'#4f9a3c', 'pk-back2':'#3a7a2c', 'pk-back3':'#2b5c20',
+      'pk-scrap1':'#bfe39a', 'pk-scrap2':'#5faf4a',
+      'pk-shade':'rgba(30,70,20,.24)'
+    },
+    soda:{
+      pk1:'#b8e6ff', pk2:'#7fc9f2', pk3:'#4a9fdd',
+      'pk-strip1':'#effbff', 'pk-strip2':'#b8e6ff', 'pk-strip3':'#7fc9f2',
+      'pk-side1':'#3a86b8', 'pk-side2':'#2b6a94',
+      'pk-back1':'#3a8ac4', 'pk-back2':'#2b6f9f', 'pk-back3':'#1f557c',
+      'pk-scrap1':'#b8e6ff', 'pk-scrap2':'#4a9fdd',
+      'pk-shade':'rgba(20,60,90,.24)'
+    },
+    grape:{
+      pk1:'#e3c7ff', pk2:'#c19ae8', pk3:'#9a6cc9',
+      'pk-strip1':'#f9f0ff', 'pk-strip2':'#e3c7ff', 'pk-strip3':'#c19ae8',
+      'pk-side1':'#8458b0', 'pk-side2':'#6b458f',
+      'pk-back1':'#855bb6', 'pk-back2':'#6a4492', 'pk-back3':'#4f3270',
+      'pk-scrap1':'#e3c7ff', 'pk-scrap2':'#9a6cc9',
+      'pk-shade':'rgba(60,30,90,.24)'
+    },
+    mango:{
+      pk1:'#ffe9a3', pk2:'#ffd266', pk3:'#f2b53c',
+      'pk-strip1':'#fffbe8', 'pk-strip2':'#ffe9a3', 'pk-strip3':'#ffd266',
+      'pk-side1':'#d19a24', 'pk-side2':'#b07f18',
+      'pk-back1':'#e0a52b', 'pk-back2':'#bd861c', 'pk-back3':'#94690f',
+      'pk-scrap1':'#ffe9a3', 'pk-scrap2':'#f2b53c',
+      'pk-shade':'rgba(120,80,10,.22)'
+    }
+  };
+
+  let lastPackEl = null;
+
+  function applyPackTheme(name){
+    const theme = PACK_THEMES[name] || PACK_THEMES.caramel;
+    const ov = $('#overlay');
+    if (!ov) return;
+    Object.keys(theme).forEach(key => ov.style.setProperty('--' + key, theme[key]));
+  }
+
+  const TEAR_DIST = 168;
+  const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const anim = {
+    timers: [],
+    running: false,
+    onSkip: null
+  };
+
+  const packState = {
+    rotX:-7, rotY:12,
+    mode:null, startX:0, startY:0, baseX:-7, baseY:12,
+    moved:0, downAt:0,
+    progress:0, dir:1, pct:-1,
+    torn:false, result:null, raf:null
+  };
+
+  function packClamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+
+  let audioCtx = null;
+  function tone(freq, ms, type, volume){
+    if (!state.settings.sound) return;
+    try{
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      audioCtx = audioCtx || new Ctx();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      const t = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type || 'sine';
+      osc.frequency.setValueAtTime(freq, t);
+      gain.gain.setValueAtTime(volume == null ? 0.05 : volume, t);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + ms / 1000);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(t);
+      osc.stop(t + ms / 1000 + 0.02);
+    }catch(e){}
+  }
+
+  function clearTimers(){
+    anim.timers.forEach(t => clearTimeout(t));
+    anim.timers = [];
+  }
+
+  function later(fn, ms){
+    const id = setTimeout(fn, ms);
+    anim.timers.push(id);
+    return id;
+  }
+
+  /* ------------------------------------------------------------
+   * 3D 卡包：拖动旋转 + 顶部封条左右撕开
+   * ------------------------------------------------------------ */
+  function zigzagClip(teeth, depth){
+    const pts = ['0% 100%', '100% 100%'];
+    const step = 100 / teeth;
+    for (let i = teeth; i >= 0; i--){
+      pts.push((i * step).toFixed(2) + '% ' + (i % 2 ? depth : 0) + '%');
+    }
+    return 'polygon(' + pts.join(',') + ')';
+  }
+
+  function randomTearPath(){
+    const pts = ['M 0 13'];
+    for (let x = 2.5; x <= 100; x += 2.5){
+      pts.push('L ' + x.toFixed(1) + ' ' + (5 + Math.random() * 15).toFixed(1));
+    }
+    return pts.join(' ');
+  }
+
+  function mountPack(result){
+    const s = result.store;
+    const d = result.dish;
+    $('#pcName').textContent = d ? d.name : s.name;
+    $('#pcMeta').textContent = [s.name, s.spot || canteenName(s.canteenId)]
+      .filter(Boolean).join(' · ');
+    $('#packHint').textContent = reduceMotion
+      ? '点击顶部封条即可撕开'
+      : '拖动卡包可旋转 · 按住顶部封条左右划开';
+    $('#packStrip').style.clipPath = zigzagClip(24, 15);
+    $('#packGap').style.clipPath = zigzagClip(20, 12);
+    const dPath = randomTearPath();
+    $('#tearBase').setAttribute('d', dPath);
+    $('#tearHi').setAttribute('d', dPath);
+  }
+
+  function applyRotation(animate){
+    const pack = $('#pack');
+    if (!pack) return;
+    pack.style.transition = animate ? 'transform .55s cubic-bezier(.22,1,.36,1)' : 'none';
+    pack.style.transform = 'rotateX(' + packState.rotX.toFixed(2) + 'deg) rotateY(' + packState.rotY.toFixed(2) + 'deg)';
+  }
+
+  function updateTear(p, dir, animate){
+    packState.progress = p;
+    const strip = $('#packStrip');
+    if (!strip) return;
+    strip.style.transition = animate
+      ? 'transform .32s cubic-bezier(.22,1,.36,1), opacity .2s'
+      : 'none';
+    strip.style.transform = 'translate3d(' + (dir * p * 118).toFixed(2) + '%,' +
+      (-p * 16).toFixed(2) + 'px,19px) rotateZ(' + (dir * p * 12).toFixed(2) + 'deg)';
+    strip.style.opacity = p > .97 ? '0' : '1';
+
+    const svg = $('#tearSvg');
+    if (svg) svg.style.transform = 'scaleX(' + dir + ')';
+    ['#tearBase', '#tearHi'].forEach(sel => {
+      const el = $(sel);
+      if (!el) return;
+      el.style.transition = animate ? 'stroke-dashoffset .3s ease' : 'none';
+      el.style.strokeDashoffset = String(100 - p * 100);
+    });
+
+    $('#packMouth').classList.toggle('open', p > .02);
+  }
+
+  function resetOverlay(){
+    clearTimers();
+    anim.running = false;
+    anim.onSkip = null;
+    if (packState.raf){ cancelAnimationFrame(packState.raf); packState.raf = null; }
+    packState.mode = null;
+    packState.rotX = -7;
+    packState.rotY = 12;
+    packState.progress = 0;
+    packState.dir = 1;
+    packState.pct = -1;
+    packState.torn = false;
+    packState.result = null;
+
+    const stage = $('#packStage');
+    if (stage) stage.classList.remove('teared');
+    const pack = $('#pack');
+    if (pack){
+      pack.classList.add('instant');
+      pack.classList.remove('teared', 'grabbing');
+    }
+    applyRotation(false);
+
+    const strip = $('#packStrip');
+    if (strip){
+      strip.classList.remove('gone');
+      strip.style.opacity = '1';
+    }
+    updateTear(0, 1, false);
+    $('#packScrap').classList.remove('show');
+    $('#packHint').classList.remove('pulse');
+    $('#reveal').classList.remove('show');
+    $('#btnSkip').style.opacity = '1';
+    $('#btnSkip').style.pointerEvents = 'auto';
+  }
+
+  function autoTear(){
+    if (packState.torn || !packState.result) return;
+    const dir = packState.dir || 1;
+    if (reduceMotion){
+      completeTear();
+      return;
+    }
+    const dur = 440;
+    const t0 = performance.now();
+    const step = t => {
+      if (packState.torn) return;
+      const k = Math.min(1, (t - t0) / dur);
+      updateTear(1 - Math.pow(1 - k, 3), dir, false);
+      if (k < 1) requestAnimationFrame(step);
+      else completeTear();
+    };
+    requestAnimationFrame(step);
+  }
+
+  function completeTear(){
+    const result = packState.result;
+    if (!result || packState.torn) return;
+    packState.torn = true;
+    updateTear(1, packState.dir, true);
+    packState.rotX = -5;
+    packState.rotY = 4;
+    applyRotation(true);
+
+    $('#packStrip').classList.add('gone');
+    $('#pack').classList.add('teared');
+    $('#packStage').classList.add('teared');
+    $('#packHint').classList.remove('pulse');
+    $('#packHint').textContent = '撕开了 · 卡面朝上';
+    $('#packScrap').classList.add('show');
+    $('#btnSkip').style.opacity = '0';
+    $('#btnSkip').style.pointerEvents = 'none';
+
+    tone(900, 120, 'sine', 0.05);
+    later(() => tone(1320, 420, 'sine', 0.055), 120);
+    later(() => {
+      fillReveal(result);
+      $('#reveal').classList.add('show');
+      const accept = $('#btnAccept');
+      if (accept) accept.focus({ preventScroll:true });
+      announce('抽到了' + (result.dish ? result.dish.name : result.store.name) + '，' + canteenName(result.store.canteenId));
+    }, 720);
+
+    anim.running = false;
+    anim.onSkip = null;
+  }
+
+  function revealInstantly(result){
+    mountPack(result);
+    packState.result = result;
+    packState.dir = 1;
+    packState.torn = true;
+    packState.rotX = -5;
+    packState.rotY = 4;
+    applyRotation(true);
+    $('#packStrip').classList.add('gone');
+    $('#pack').classList.add('teared');
+    $('#packStage').classList.add('teared');
+    $('#packHint').textContent = '已撕开';
+    updateTear(1, 1, false);
+    $('#btnSkip').style.opacity = '0';
+    $('#btnSkip').style.pointerEvents = 'none';
+    fillReveal(result);
+    $('#reveal').classList.add('show');
+    announce('抽到了' + (result.dish ? result.dish.name : result.store.name));
+  }
+
+  function glide(vx, vy){
+    if (packState.raf) cancelAnimationFrame(packState.raf);
+    let last = performance.now();
+    const step = t => {
+      const dt = Math.min(32, t - last);
+      last = t;
+      vx *= Math.pow(0.94, dt / 16.67);
+      vy *= Math.pow(0.94, dt / 16.67);
+      const k = dt / 16.67;
+      packState.rotY = packClamp(packState.rotY + vx * k, -150, 150);
+      packState.rotX = packClamp(packState.rotX + vy * k, -32, 32);
+      applyRotation(false);
+      if (Math.abs(vx) > .05 || Math.abs(vy) > .05){
+        packState.raf = requestAnimationFrame(step);
+      } else {
+        packState.raf = null;
+      }
+    };
+    packState.raf = requestAnimationFrame(step);
+  }
+
+  function bindPack(){
+    const pack = $('#pack');
+    const strip = $('#packStrip');
+    if (!pack || !strip) return;
+
+    pack.addEventListener('pointerdown', e => {
+      if (!$('#overlay').classList.contains('show')) return;
+      if (packState.torn) return;
+      if (e.button != null && e.button !== 0) return;
+      e.preventDefault();
+      pack.classList.add('grabbing');
+      packState.mode = e.target.closest('#packStrip') ? 'tear' : 'rotate';
+      packState.startX = e.clientX;
+      packState.startY = e.clientY;
+      packState.baseX = packState.rotX;
+      packState.baseY = packState.rotY;
+      packState.moved = 0;
+      packState.downAt = Date.now();
+      packState.pct = -1;
+      if (pack.setPointerCapture && e.pointerId != null){
+        try{ pack.setPointerCapture(e.pointerId); }catch(err){}
+      }
+    });
+
+    pack.addEventListener('pointermove', e => {
+      if (!packState.mode) return;
+      const dx = e.clientX - packState.startX;
+      const dy = e.clientY - packState.startY;
+      packState.moved = Math.max(packState.moved, Math.abs(dx) + Math.abs(dy));
+
+      if (packState.mode === 'tear'){
+        if (packState.torn) return;
+        const p = packClamp(Math.abs(dx) / TEAR_DIST, 0, 1);
+        if (Math.abs(dx) > 4) packState.dir = dx < 0 ? -1 : 1;
+        updateTear(p, packState.dir, false);
+        const pct = Math.floor((p * 100) / 10) * 10;
+        if (pct !== packState.pct && p > .03 && p < 1){
+          packState.pct = pct;
+          $('#packHint').textContent = '继续撕 · ' + pct + '%';
+        }
+      } else {
+        packState.rotY = packClamp(packState.baseY + dx * 0.45, -150, 150);
+        packState.rotX = packClamp(packState.baseX - dy * 0.35, -32, 32);
+        applyRotation(false);
+      }
+      e.preventDefault();
+    }, { passive:false });
+
+    const onEnd = () => {
+      if (!packState.mode) return;
+      const mode = packState.mode;
+      packState.mode = null;
+      pack.classList.remove('grabbing');
+
+      if (mode === 'tear'){
+        if (packState.torn) return;
+        if (packState.progress >= 0.92){
+          completeTear();
+        } else if (packState.progress < 0.02 && packState.moved < 8 && Date.now() - packState.downAt < 500){
+          packState.dir = 1;
+          autoTear();
+        } else {
+          updateTear(0, packState.dir, true);
+          $('#packHint').textContent = '再划远一点，撕到另一侧就开了';
+        }
+      } else {
+        glide((packState.rotY - packState.baseY) * 0.02, (packState.rotX - packState.baseX) * 0.02);
+      }
+    };
+
+    pack.addEventListener('pointerup', onEnd);
+    pack.addEventListener('pointercancel', onEnd);
+
+    strip.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar'){
+        e.preventDefault();
+        packState.dir = 1;
+        autoTear();
+      }
+    });
+  }
+
+  function openOverlay(){
+    const ov = $('#overlay');
+    ov.classList.add('show');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => {
+      if (ov.classList.contains('show')) ov.focus({ preventScroll:true });
+    }, 60);
+  }
+
+  function closeOverlay(){
+    const ov = $('#overlay');
+    ov.classList.remove('show');
+    document.body.style.overflow = '';
+    clearTimers();
+    anim.running = false;
+    anim.onSkip = null;
+    packState.mode = null;
+    if (packState.raf){ cancelAnimationFrame(packState.raf); packState.raf = null; }
+    if (lastPackEl) lastPackEl.focus({ preventScroll:true });
+  }
+
+  function fillReveal(result){
+    const s = result.store;
+    const d = result.dish || null;
+    $('#rvName').textContent = d ? d.name : s.name;
+    const metaParts = [];
+    if (d) metaParts.push(s.name);
+    metaParts.push(s.spot || '校内档口');
+    metaParts.push(d ? ('约 ¥' + d.price) : priceLabel(s));
+    if (state.userPos && walkMinutes(s, state.userPos) != null){
+      metaParts.push('步行约 ' + walkMinutes(s, state.userPos) + ' 分钟');
+    }
+    $('#rvMeta').textContent = metaParts.join(' · ');
+
+    const status = openState(s, new Date());
+    const statusEl = $('#rvStatus');
+    if (statusEl){
+      statusEl.className = 'reveal-status' + (status.open ? ' is-open' : '');
+      statusEl.textContent = status.known ? status.text : '营业时间未录入，出发前请确认';
+    }
+
+    const tags = [];
+    if (d) (d.category || []).forEach(t => tags.push(t));
+    (s.tags || []).forEach(t => tags.push(t));
+    if (d && d.light) tags.push('轻食');
+    if (d && (d.diet || []).includes('素食')) tags.push('素食');
+    if (d && (d.diet || []).includes('清真')) tags.push('清真');
+
+    $('#rvTags').innerHTML = Array.from(new Set(tags)).slice(0, 4)
+      .map(t => '<span>' + esc(t) + '</span>').join('');
+
+    const notice = result.notice ? '<div style="margin-bottom:6px;color:#ffc9ad">' + esc(result.notice) + '</div>' : '';
+    $('#rvReason').innerHTML = notice + '推荐理由：' + esc(result.reason || '');
+
+    $('#btnFav').textContent = state.favorites.includes(s.id) ? '已收藏' : '收藏';
+  }
+
+  function playAnimation(result){
+    resetOverlay();
+    openOverlay();
+    mountPack(result);
+    const packEl = $('#pack');
+    if (packEl) requestAnimationFrame(() => packEl.classList.remove('instant'));
+    packState.result = result;
+    anim.running = true;
+    anim.onSkip = function(){
+      if (!anim.running) return;
+      packState.dir = packState.dir || 1;
+      autoTear();
+    };
+    $('#packHint').classList.add('pulse');
+    if (!state.settings.seen){
+      state.settings.seen = true;
+      saveSettings();
+    }
+  }
+
+  /* ============================================================
+   * 抽取主流程
+   * ============================================================ */
+
+  function resolveCanteen(){
+    return state.locationMode === 'nearest'
+      ? (state.userPos ? nearestCanteen(state.userPos).id : null)
+      : state.locationMode;
+  }
+
+  let roundKey;
+  let feedbackAction;
+  function clearDrawFeedback(){
+    feedbackAction = null;
+    $('#drawFeedback').hidden = true;
+  }
+
+  function syncRound(){
+    const key = JSON.stringify([state.locationMode, resolveCanteen(), state.hard, state.soft]);
+    if (key === roundKey) return;
+    roundKey = key;
+    state.banned.clear();
+    clearDrawFeedback();
+  }
+
+  function showDrawFeedback(result){
+    feedbackAction = result.action;
+    $('#drawFeedback').hidden = false;
+    $('#drawMessage').textContent = result.notice;
+    const button = $('#drawAction');
+    button.hidden = !feedbackAction;
+    button.textContent = feedbackAction === 'showAllHours'
+      ? '查看其他时段的参考档口'
+      : feedbackAction === 'restart' ? '重新开始一轮' : '';
+  }
+
+  function showDrawResult(result){
+    clearDrawFeedback();
+    pendingResult = result;
+    if (state.settings.animation && !reduceMotion){
+      playAnimation(result);
+      return;
+    }
+    resetOverlay();
+    openOverlay();
+    revealInstantly(result);
+  }
+
+  function handleDraw(){
+    if (state.busy || anim.running) return;
+    if (isExcludeAll()){
+      const removed = keepOneExcludeOpen();
+      syncChipsFromState();
+      renderSelected();
+      savePrefs();
+      toast('至少留一个不选的，已帮你取消「' + removed + '」');
+    }
+    state.busy = true;
+    try{
+      syncRound();
+      const cid = resolveCanteen();
+      if (!cid){
+        showDrawFeedback({ notice:'还无法判断最近的食堂。请点「使用我的定位」，或直接选汀香园或甘怡园。' });
+        return;
+      }
+      const result = drawOnce(cid);
+      if (!result.store){
+        showDrawFeedback(result);
+        return;
+      }
+      showDrawResult(result);
+    } finally {
+      state.busy = false;
+    }
+  }
+
+  let pendingResult = null;
+
+  function commitResult(result){
+    state.session.add(result.store.id);
+    state.history.unshift({
+      time:new Date().toISOString(),
+      storeId:result.store.id,
+      storeName:result.store.name,
+      dishName:result.dish ? result.dish.name : null,
+      dishPrice:result.dish ? result.dish.price : null,
+      canteenName:canteenName(result.store.canteenId),
+      filters:{
+        exclude:state.hard.exclude.slice(),
+        budget:state.hard.budget,
+        lightMode:state.hard.lightMode
+      }
+    });
+    if (state.history.length > 60) state.history.length = 60;
+    writeJSON(LS.history, state.history);
+
+    state.lastResult = {
+      storeId:result.store.id,
+      dishName:result.dish ? result.dish.name : null,
+      dishPrice:result.dish ? result.dish.price : null,
+      time:new Date().toISOString()
+    };
+    writeJSON(LS.last, state.lastResult);
+    renderLastResult();
+    renderHistory();
+  }
+
+  /* ============================================================
+   * 事件绑定
+   * ============================================================ */
+
+  function excludeChipTotal(){
+    const total = $$('[data-group="exclude"] .chip').length;
+    return total > 0 ? total : 0;
+  }
+
+  function isExcludeAll(){
+    const total = excludeChipTotal();
+    return total > 0 && state.hard.exclude.length >= total;
+  }
+
+  function keepOneExcludeOpen(){
+    const total = excludeChipTotal();
+    if (total > 0 && state.hard.exclude.length >= total){
+      return state.hard.exclude.pop() || null;
+    }
+    return null;
+  }
+
+  function bindChips(){
+    $('#selectedStrip').addEventListener('click', e => {
+      const el = e.target.closest('[data-clear]');
+      if (!el) return;
+      const key = el.dataset.clear;
+      if (key === 'exclude') state.hard.exclude = [];
+      else if (key === 'budget') state.hard.budget = null;
+      else if (key === 'lightMode') state.hard.lightMode = null;
+      syncChipsFromState();
+      renderSelected();
+      renderLocation();
+      savePrefs();
+    });
+
+    $('#filterCard').addEventListener('click', e => {
+      const chip = e.target.closest('.chip');
+      if (!chip) return;
+      const row = chip.closest('[data-group]');
+      if (!row) return;
+      const group = row.dataset.group;
+      const mode = row.dataset.mode;
+      const value = chip.dataset.value;
+
+      const target = state.hard[group] !== undefined ? state.hard : state.soft;
+
+      if (mode === 'multi'){
+        const chips = $$('.chip', row);
+        const arr = chips.filter(c => c.getAttribute('aria-pressed') === 'true')
+                         .map(c => c.dataset.value);
+        const i = arr.indexOf(value);
+        if (i >= 0){
+          arr.splice(i, 1);
+        } else {
+          if (group === 'exclude' && chips.length > 0 && arr.length + 1 >= chips.length){
+            toast('至少留一个不选的分类');
+            return;
+          }
+          arr.push(value);
+        }
+        target[group] = arr;
+      } else {
+        target[group] = target[group] === value ? null : value;
+      }
+
+      syncChipsFromState();
+      renderSelected();
+      savePrefs();
+    });
+  }
+
+  function bindLocation(){
+    $('#locGroup').addEventListener('change', e => {
+      const input = e.target.closest('input[name="loc"]');
+      if (!input) return;
+      state.locationMode = input.value;
+      renderLocation();
+      renderSelected();
+      savePrefs();
+    });
+
+    $('#btnLocate').addEventListener('click', locate);
+  }
+
+  function bindSwitches(){
+    $('#swOpen').addEventListener('change', e => {
+      state.hard.openOnly = e.target.checked;
+      savePrefs();
+    });
+    $('#swFresh').addEventListener('change', e => {
+      state.soft.fresh = e.target.checked;
+      savePrefs();
+    });
+    $('#swAnim').addEventListener('change', e => {
+      state.settings.animation = e.target.checked;
+      saveSettings();
+    });
+    $('#swSound').addEventListener('change', e => {
+      state.settings.sound = e.target.checked;
+      saveSettings();
+      if (e.target.checked) tone(880, 160, 'sine', 0.05);
+    });
+  }
+
+  function resetFilters(){
+    state.hard = { exclude:[], budget:null, lightMode:null, openOnly:true };
+    state.soft = { fresh:true };
+    syncChipsFromState();
+    renderSelected();
+    savePrefs();
+  }
+
+  function bindDrawer(name, openBtn, maskEl, drawerEl){
+    const open = () => {
+      maskEl.classList.add('show');
+      drawerEl.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    };
+    const close = () => {
+      maskEl.classList.remove('show');
+      drawerEl.classList.remove('show');
+      document.body.style.overflow = '';
+    };
+    openBtn.addEventListener('click', open);
+    maskEl.addEventListener('click', close);
+    $$('[data-close="' + name + '"]', drawerEl).forEach(b => b.addEventListener('click', close));
+  }
+
+  function exportData(){
+    const data = {
+      version:1,
+      exportedAt:new Date().toISOString(),
+      preferences:readJSON(LS.prefs, {}),
+      history:state.history,
+      favorites:state.favorites,
+      settings:state.settings,
+      coords:readJSON(LS.coords, null)
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '食堂盲盒数据.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    toast('已导出，检查一下下载目录');
+  }
+
+  function importData(file){
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{
+        const data = JSON.parse(String(reader.result));
+        if (data.preferences && typeof data.preferences === 'object') writeJSON(LS.prefs, data.preferences);
+        if (Array.isArray(data.history)) writeJSON(LS.history, data.history);
+        if (Array.isArray(data.favorites)) writeJSON(LS.favorites, data.favorites);
+        if (data.settings && typeof data.settings === 'object') writeJSON(LS.settings, data.settings);
+        if (data.coords && typeof data.coords === 'object') writeJSON(LS.coords, data.coords);
+
+        state.history = Array.isArray(data.history) ? data.history : state.history;
+        state.favorites = Array.isArray(data.favorites) ? data.favorites : state.favorites;
+        loadAll();
+        syncChipsFromState();
+        renderSelected();
+        renderLocation();
+        renderHistory();
+        renderLastResult();
+        renderFavorites();
+        toast('导入成功');
+      }catch(e){
+        toast('文件格式不对，导入失败');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function bindPackPick(){
+    $$('.pack-pick').forEach(btn => {
+      btn.style.setProperty('--zigzag', zigzagClip(22, 34));
+      btn.addEventListener('click', () => {
+        if (state.busy || anim.running) return;
+        lastPackEl = btn;
+        applyPackTheme(btn.dataset.theme);
+        handleDraw();
+      });
+    });
+  }
+
+  function bindLayout(){
+    const ui = readJSON(LS.ui, {});
+    const saveUi = () => writeJSON(LS.ui, ui);
+
+    $$('.panel-toggle').forEach(btn => {
+      const panel = btn.closest('.panel');
+      if (!panel) return;
+      const key = btn.dataset.panel;
+      const apply = collapsed => {
+        panel.classList.toggle('collapsed', collapsed);
+        btn.setAttribute('aria-expanded', String(!collapsed));
+      };
+      apply(!!(ui.panels && ui.panels[key]));
+      btn.addEventListener('click', () => {
+        const next = !panel.classList.contains('collapsed');
+        apply(next);
+        ui.panels = ui.panels || {};
+        ui.panels[key] = next;
+        saveUi();
+      });
+    });
+
+    const shell = $('#shell');
+    const reopen = $('#btnReopenSide');
+    const setSide = collapsed => {
+      shell.classList.toggle('side-collapsed', collapsed);
+      reopen.classList.toggle('show', collapsed);
+      reopen.setAttribute('aria-expanded', String(!collapsed));
+      $('#btnCollapseSide').setAttribute('aria-expanded', String(!collapsed));
+      $('#sidePanel').setAttribute('aria-hidden', String(collapsed));
+      ui.sideCollapsed = collapsed;
+      saveUi();
+    };
+    setSide(!!ui.sideCollapsed);
+    $('#btnCollapseSide').addEventListener('click', () => setSide(true));
+    reopen.addEventListener('click', () => setSide(false));
+  }
+
+  function bindOverlay(){
+    const nav = $('#overlay');
+
+    $('#btnSkip').addEventListener('click', () => {
+      if (anim.onSkip) anim.onSkip();
+    });
+
+    $('#btnOverlayClose').addEventListener('click', () => {
+      closeOverlay();
+    });
+
+    $('#overlay').addEventListener('click', e => {
+      if (e.target === $('#overlay') && anim.running && anim.onSkip){
+        anim.onSkip();
+      }
+    });
+
+    $('#btnAccept').addEventListener('click', () => {
+      if (pendingResult){
+        commitResult(pendingResult);
+        const name = (pendingResult.dish ? pendingResult.dish.name : pendingResult.store.name) +
+          ' · ' + pendingResult.store.name;
+        closeOverlay();
+        toast('已记录：' + name + '，去吃吧');
+        announce('已选定' + name);
+      } else {
+        closeOverlay();
+      }
+    });
+
+    $('#btnAgain').addEventListener('click', () => {
+      if (!pendingResult) return;
+      doRedraw(false);
+    });
+
+    $('#btnAnother').addEventListener('click', () => {
+      if (!pendingResult) return;
+      doRedraw(true);
+    });
+
+    $('#btnFav').addEventListener('click', () => {
+      if (!pendingResult) return;
+      const id = pendingResult.store.id;
+      const i = state.favorites.indexOf(id);
+      if (i >= 0){
+        state.favorites.splice(i, 1);
+        $('#btnFav').textContent = '收藏';
+        toast('已取消收藏');
+      } else {
+        state.favorites.push(id);
+        $('#btnFav').textContent = '已收藏';
+        toast('已收藏，下次抽到它会稍微更容易');
+      }
+      writeJSON(LS.favorites, state.favorites);
+      renderFavorites();
+    });
+
+    $('#btnNav').addEventListener('click', () => {
+      if (!pendingResult) return;
+      const s = pendingResult.store;
+      const text = ((s.spot || canteenName(s.canteenId)) + ' ' + s.name)
+        .replace(/\s+/g, ' ').trim();
+      copyText(text);
+    });
+  }
+
+  function bindDrawerTabs(){
+    const tabs = $$('.drawer-tab');
+    const panels = { historyBody:$('#historyBody'), favBody:$('#favBody') };
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.setAttribute('aria-selected', t === tab ? 'true' : 'false'));
+        Object.keys(panels).forEach(id => { panels[id].hidden = (id !== tab.dataset.tab); });
+        if (tab.dataset.tab === 'favBody') renderFavorites();
+      });
+    });
+
+    $('#favBody').addEventListener('click', e => {
+      const btn = e.target.closest('[data-fav-remove]');
+      if (!btn) return;
+      const id = btn.dataset.favRemove;
+      const i = state.favorites.indexOf(id);
+      if (i >= 0) state.favorites.splice(i, 1);
+      writeJSON(LS.favorites, state.favorites);
+      renderFavorites();
+      if (pendingResult && pendingResult.store.id === id) $('#btnFav').textContent = '收藏';
+      toast('已取消收藏');
+    });
+  }
+
+  function doRedraw(banCurrent){
+    if (state.busy || anim.running) return;
+    if (isExcludeAll()){
+      const removed = keepOneExcludeOpen();
+      syncChipsFromState();
+      renderSelected();
+      savePrefs();
+      toast('至少留一个不选的，已帮你取消「' + removed + '」');
+    }
+    syncRound();
+    const cid = resolveCanteen();
+    if (!cid){
+      closeOverlay();
+      handleDraw();
+      return;
+    }
+    const previousId = pendingResult ? pendingResult.store.id : null;
+    if (banCurrent && previousId && pendingResult.store.canteenId === cid) state.banned.add(previousId);
+    const result = drawOnce(cid, banCurrent ? null : previousId);
+
+    if (!result.store){
+      closeOverlay();
+      showDrawFeedback(result);
+      return;
+    }
+    showDrawResult(result);
+  }
+
+  /* ============================================================
+   * 启动
+   * ============================================================ */
+
+  function init(){
+    loadAll();
+    savePrefs();
+    syncChipsFromState();
+    renderSelected();
+    renderLocation();
+    renderHistory();
+    renderLastResult();
+    renderCoordPanel();
+    renderFavorites();
+    startClock();
+
+    bindChips();
+    bindLocation();
+    bindSwitches();
+    bindOverlay();
+    bindPack();
+    bindPackPick();
+    bindLayout();
+    bindDrawerTabs();
+    bindDrawer('history', $('#btnHistory'), $('#maskHistory'), $('#drawerHistory'));
+    bindDrawer('settings', $('#btnSettings'), $('#maskSettings'), $('#drawerSettings'));
+
+    $('#drawAction').addEventListener('click', () => {
+      if (feedbackAction === 'showAllHours'){
+        state.hard.openOnly = false;
+        syncChipsFromState();
+        savePrefs();
+      } else if (feedbackAction === 'restart'){
+        state.banned.clear();
+      } else {
+        return;
+      }
+      handleDraw();
+    });
+    $('#btnReset').addEventListener('click', () => { resetFilters(); toast('筛选条件已重置'); });
+
+    $$('[data-calib]').forEach(btn => {
+      btn.addEventListener('click', () => calibrateCanteen(btn.dataset.calib));
+    });
+
+    $('#btnExport').addEventListener('click', exportData);
+    $('#btnImport').addEventListener('click', () => $('#fileImport').click());
+    $('#fileImport').addEventListener('change', e => {
+      const f = e.target.files && e.target.files[0];
+      if (f) importData(f);
+      e.target.value = '';
+    });
+
+    $('#btnResetPrefs').addEventListener('click', () => {
+      resetFilters();
+      toast('偏好已恢复默认');
+    });
+
+    $('#btnClearAll').addEventListener('click', () => {
+      [LS.prefs, LS.history, LS.favorites, LS.settings, LS.last, LS.coords].forEach(k => {
+        try{ localStorage.removeItem(k); }catch(e){}
+      });
+      CANTEENS.forEach(c => {
+        c.lat = DEFAULT_COORDS[c.id].lat;
+        c.lng = DEFAULT_COORDS[c.id].lng;
+      });
+      state.userPos = null;
+      state.locationNotice = '';
+      state.history = [];
+      state.favorites = [];
+      state.lastResult = null;
+      state.session = new Set();
+      state.banned = new Set();
+      state.settings = { animation:true, sound:false, seen:false };
+      state.locationMode = 'c1';
+      resetFilters();
+      renderHistory();
+      renderLastResult();
+      renderCoordPanel();
+      renderFavorites();
+      renderLocation();
+      toast('已清空全部数据');
+    });
+
+    $('#lastResult').addEventListener('click', () => {
+      if (!state.lastResult) return;
+      const s = store(state.lastResult.storeId);
+      if (!s) return;
+      const dishes = s.dishes || [];
+      const dish = dishes.find(d => d.name === state.lastResult.dishName) || dishes[0] || null;
+      pendingResult = { store:s, dish:dish, reason:'这是你上一次抽到的。', notice:'', pool:[s], opts:null };
+      resetOverlay();
+      openOverlay();
+      revealInstantly(pendingResult);
+      $('#packHint').textContent = '这是你上一次撕开的卡包';
+    });
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape'){
+        if ($('#overlay').classList.contains('show')) closeOverlay();
+        $('#maskHistory').classList.remove('show');
+        $('#drawerHistory').classList.remove('show');
+        $('#maskSettings').classList.remove('show');
+        $('#drawerSettings').classList.remove('show');
+        document.body.style.overflow = '';
+      }
+    });
+
+    if (location.protocol === 'file:'){
+      setTimeout(() => toast('提示：双击打开时定位可能不可用，选食堂也能正常抽'), 900);
+    }
+  }
+
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>
