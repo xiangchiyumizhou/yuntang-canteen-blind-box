@@ -447,6 +447,8 @@ h1,h2,h3,p{margin:0}
   50%{transform:translateY(-9px) rotate(1.1deg)}
 }
 .pack{
+  --foil-half-depth:5px;
+  --foil-join-depth:calc(var(--foil-half-depth) + .35px);
   position:relative;width:100%;aspect-ratio:264/360;
   transform-style:preserve-3d;
   transform:rotateX(-7deg) rotateY(12deg);
@@ -459,7 +461,7 @@ h1,h2,h3,p{margin:0}
   backface-visibility:hidden;overflow:hidden;clip-path:var(--foil-outline);
 }
 .pack-front{
-  transform:translateZ(5px);
+  transform:translateZ(var(--foil-half-depth));
   background:
     linear-gradient(90deg,rgba(6,13,43,.22),rgba(255,255,255,.38) 2%,transparent 6% 92%,rgba(255,255,255,.24) 96%,rgba(0,0,0,.18)),
     linear-gradient(106deg,rgba(255,255,255,.20),transparent 22% 69%,rgba(255,255,255,.08) 79%,transparent 87%),
@@ -479,7 +481,7 @@ h1,h2,h3,p{margin:0}
   background-size:140px 140px;opacity:.06;mix-blend-mode:overlay;
 }
 .pack-back{
-  transform:rotateY(180deg) translateZ(5px);
+  transform:rotateY(180deg) translateZ(var(--foil-half-depth));
   background:linear-gradient(158deg,var(--pk-back1),var(--pk-back2) 60%,var(--pk-back3));
 }
 .pack-back::before{
@@ -499,12 +501,22 @@ h1,h2,h3,p{margin:0}
 .pb-title{font-size:12px;letter-spacing:3px;font-weight:800}
 .pb-sub{font-size:11px;color:rgba(255,255,255,.55)}
 .pb-mark{font-size:34px;opacity:.35}
+.pack-side,.pack-cap{position:absolute;backface-visibility:hidden}
 .pack-side{
-  position:absolute;top:32px;bottom:26px;width:10px;backface-visibility:hidden;
-  background:linear-gradient(180deg,var(--pk-side1),var(--pk-side2));
+  width:calc(var(--foil-join-depth) * 2);transform-origin:0 0;
+  background:linear-gradient(90deg,var(--pk-side2),var(--pk-side1) 50%,var(--pk-side2));
+  transform:skewX(var(--wall-skew)) translateZ(var(--wall-z)) rotateY(var(--wall-angle));
 }
-.pack-side-l{left:-5px;transform:rotateY(-90deg);transform-origin:100% 50%}
-.pack-side-r{right:-5px;transform:rotateY(90deg);transform-origin:0 50%}
+.pack-side-l{--wall-z:calc(-1 * var(--foil-join-depth));--wall-angle:-90deg}
+.pack-side-r{--wall-z:var(--foil-join-depth);--wall-angle:90deg}
+.pack-cap{
+  left:0;right:0;height:calc(var(--foil-join-depth) * 2);
+  transform-origin:50% 0;
+  background:linear-gradient(var(--pk-side1),var(--pk-side2));
+}
+.pack-cap-top{top:1.2%;transform:translateZ(calc(-1 * var(--foil-join-depth))) rotateX(90deg)}
+.pack-cap-bottom{top:98.8%;transform:translateZ(var(--foil-join-depth)) rotateX(-90deg)}
+.pack.opening .pack-sealed-edge,.pack.teared .pack-sealed-edge{visibility:hidden}
 .pack-strip{
   position:absolute;left:0;right:0;top:0;height:40px;
   transform:translate3d(0,0,7px);transform-origin:50% 100%;
@@ -566,8 +578,9 @@ h1,h2,h3,p{margin:0}
 .pack-card{
   position:absolute;inset:0;transform-style:preserve-3d;
   transform:translate3d(0,0,0) rotateY(180deg);
-  will-change:transform;
+  will-change:transform;visibility:hidden;
 }
+.pack.opening .pack-card,.pack.teared .pack-card{visibility:visible}
 .pack.teared .pack-card{transform:translate3d(0,-10%,56px) rotateY(0deg)}
 .pack.teared .pack-body{transform:translateY(90%);opacity:0;pointer-events:none}
 .pack.opening .pack-front,.pack.teared .pack-front,
@@ -1732,8 +1745,8 @@ body::before{
             </div>
           </div>
 
-          <div class="pack-side pack-side-l"></div>
-          <div class="pack-side pack-side-r"></div>
+          <div class="pack-cap pack-cap-top pack-sealed-edge" aria-hidden="true"></div>
+          <div class="pack-cap pack-cap-bottom" aria-hidden="true"></div>
 
           <div class="pack-mouth" id="packMouth">
             <div class="pack-gap" id="packGap"></div>
@@ -3102,20 +3115,58 @@ body::before{
     return pts.join(' ');
   }
 
+  // Shared silhouette for both foil faces and the walls between them.
+  const FOIL_EDGE = [
+    [0, 0], [0, 11], [1.5, 14], [.5, 50], [1.5, 88], [0, 98.8], [0, 100]
+  ];
+
   function foilOutline(opened){
+    const edge = opened ? FOIL_EDGE.slice(1) : FOIL_EDGE;
+    const shoulders = edge.slice(1, -1);
     const points = [];
-    if (opened) points.push('0% 11%', '100% 11%');
+    if (opened){
+      const [, mouth] = edge[0];
+      points.push('0% ' + mouth + '%', '100% ' + mouth + '%');
+    }
     else {
       for (let i = 0; i <= 48; i++){
         points.push((i * 100 / 48).toFixed(2) + '% ' + (i % 2 ? 1.2 : 0) + '%');
       }
     }
-    points.push('98.5% 14%', '99.5% 50%', '98.5% 88%', '100% 98.8%');
+    for (const [x, y] of shoulders) points.push((100 - x) + '% ' + y + '%');
     for (let i = 48; i >= 0; i--){
       points.push((i * 100 / 48).toFixed(2) + '% ' + (i % 2 ? 98.8 : 100) + '%');
     }
-    points.push('1.5% 88%', '.5% 50%', '1.5% 14%');
+    for (const [x, y] of shoulders.reverse()) points.push(x + '% ' + y + '%');
     return 'polygon(' + points.join(',') + ')';
+  }
+
+  function mountFoilShell(pack){
+    pack.style.setProperty('--foil-outline', foilOutline(false));
+    pack.style.setProperty('--foil-open-outline', foilOutline(true));
+
+    const [width, height] = getComputedStyle(pack).aspectRatio.split('/').map(Number);
+    const walls = document.createDocumentFragment();
+    for (let index = 0; index + 1 < FOIL_EDGE.length; index++){
+      const [x, y] = FOIL_EDGE[index];
+      const [nextX, nextY] = FOIL_EDGE[index + 1];
+      const skew = Math.atan2((nextX - x) * width, (nextY - y) * height) * 180 / Math.PI;
+      for (const direction of ['l', 'r']){
+        const left = direction === 'l';
+        const wall = document.createElement('div');
+        wall.className = 'pack-side pack-side-' + direction;
+        if (index === 0) wall.classList.add('pack-sealed-edge');
+        wall.setAttribute('aria-hidden', 'true');
+        wall.style.left = (left ? x : 100 - x) + '%';
+        wall.style.top = y + '%';
+        const span = (nextY - y) + '%';
+        // Overlap adjacent segment ends to prevent subpixel seams during rotation.
+        wall.style.height = nextY === 100 ? span : 'calc(' + span + ' + .35px)';
+        wall.style.setProperty('--wall-skew', (left ? skew : -skew) + 'deg');
+        walls.append(wall);
+      }
+    }
+    pack.querySelector('.pack-body').insertBefore(walls, $('#packMouth'));
   }
 
   function mountPack(result){
@@ -3127,8 +3178,6 @@ body::before{
     $('#packHint').textContent = reduceMotion
       ? '点击顶部封条即可撕开'
       : '拖动卡包可旋转 · 按住顶部封条左右划开';
-    $('#pack').style.setProperty('--foil-outline', foilOutline(false));
-    $('#pack').style.setProperty('--foil-open-outline', foilOutline(true));
     $('#packStrip').style.clipPath = zigzagClip(48, 10);
     $('#packGap').style.clipPath = zigzagClip(20, 12);
     const dPath = randomTearPath();
@@ -3328,6 +3377,7 @@ body::before{
     const pack = $('#pack');
     const strip = $('#packStrip');
     if (!pack || !strip) return;
+    mountFoilShell(pack);
 
     pack.addEventListener('pointerdown', e => {
       if (!$('#overlay').classList.contains('show')) return;
