@@ -552,6 +552,21 @@ h1,h2,h3,p{margin:0}
 .pack-brand{align-self:flex-start;font-size:26px;font-weight:800;color:#fff;letter-spacing:-.5px}
 .pack-sub{align-self:flex-start;font-size:9px;letter-spacing:2px;color:rgba(255,255,255,.72);margin-top:2px}
 .holo-star{width:94%;max-height:190px;flex:1;margin:12px 0 8px;filter:drop-shadow(0 7px 8px rgba(0,0,0,.24))}
+.holo-star [data-face]{display:none;transform-box:fill-box;transform-origin:center}
+.holo-star[data-expression="smile"] [data-face="smile"],
+.holo-star[data-expression="surprised"] [data-face="surprised"],
+.holo-star[data-expression="happy"] [data-face="happy"]{display:inline}
+@media (prefers-reduced-motion: no-preference){
+  .holo-star[data-expression="surprised"] [data-face="surprised"],
+  .holo-star[data-expression="happy"] [data-face="happy"]{
+    animation:holoFacePop .22s ease-out;
+  }
+  @keyframes holoFacePop{
+    0%{transform:scale(.93,.86)}
+    58%{transform:scale(1.05,1.10)}
+    100%{transform:scale(1)}
+  }
+}
 .pack-foot{
   width:100%;display:flex;justify-content:space-between;
   font-size:9px;letter-spacing:.8px;color:rgba(255,255,255,.7);
@@ -1710,7 +1725,7 @@ body::before{
             <div class="pack-print">
               <div class="pack-brand">食堂盲盒</div>
               <div class="pack-sub">TODAY'S LUNCH</div>
-              <svg class="holo-star" viewBox="0 0 120 120" aria-hidden="true">
+              <svg class="holo-star" id="packMascot" data-expression="smile" viewBox="0 0 120 120" aria-hidden="true">
                 <defs>
                   <linearGradient id="holoGrad" x1="0" y1=".2" x2="1" y2=".8">
                     <stop offset="0" stop-color="#c3e4fb"/>
@@ -1733,13 +1748,29 @@ body::before{
                 <path d="M64 5 C69 5 72 31 79 39 C86 46 112 48 113 55 C114 63 87 69 80 77 C73 85 72 112 64 114 C56 115 50 88 42 80 C34 72 7 68 6 60 C5 52 32 46 40 38 C48 30 56 5 64 5 Z"
                       fill="url(#holoGlow)"/>
                 <path d="M64 10 Q62 39 57 54 Q43 54 17 59 Q45 61 57 66 Q62 85 64 106 Q67 78 72 65 Q88 59 104 56 Q83 55 73 51 Q67 32 64 10 Z" fill="rgba(255,255,255,.55)"/>
-                <ellipse cx="49" cy="64" rx="4.5" ry="7" fill="#292d3d"/>
-                <ellipse cx="73" cy="61" rx="4.5" ry="7" fill="#292d3d"/>
-                <circle cx="48" cy="61" r="1.8" fill="#fff"/>
-                <circle cx="72" cy="58" r="1.8" fill="#fff"/>
                 <ellipse cx="41" cy="73" rx="5" ry="2.8" fill="#edabc6" opacity=".75"/>
                 <ellipse cx="82" cy="70" rx="5" ry="2.8" fill="#edabc6" opacity=".75"/>
-                <path d="M57 73 Q62 78 67 71" fill="none" stroke="#393148" stroke-width="2" stroke-linecap="round"/>
+                <g data-face="smile">
+                  <ellipse cx="49" cy="64" rx="4.5" ry="7" fill="#292d3d"/>
+                  <ellipse cx="73" cy="61" rx="4.5" ry="7" fill="#292d3d"/>
+                  <circle cx="48" cy="61" r="1.8" fill="#fff"/>
+                  <circle cx="72" cy="58" r="1.8" fill="#fff"/>
+                  <path d="M57 73 Q62 78 67 71" fill="none" stroke="#393148" stroke-width="2" stroke-linecap="round"/>
+                </g>
+                <g data-face="surprised">
+                  <path d="M44 51 Q48 47 52 50 M68 48 Q72 44 76 47" fill="none" stroke="#393148" stroke-width="1.8" stroke-linecap="round"/>
+                  <ellipse cx="49" cy="62" rx="5.5" ry="8.2" fill="#292d3d"/>
+                  <ellipse cx="73" cy="59" rx="5.5" ry="8.2" fill="#292d3d"/>
+                  <circle cx="48" cy="59" r="2" fill="#fff"/>
+                  <circle cx="72" cy="56" r="2" fill="#fff"/>
+                  <ellipse cx="62" cy="73" rx="4.6" ry="5.5" fill="#393148"/>
+                  <ellipse cx="62" cy="75.4" rx="2.4" ry="1.6" fill="#edabc6"/>
+                </g>
+                <g data-face="happy">
+                  <path d="M43 65 Q49 54 55 63 M67 62 Q73 51 79 60" fill="none" stroke="#292d3d" stroke-width="2.6" stroke-linecap="round"/>
+                  <path d="M54 69 Q62 73 71 66 Q68 80 61 79 Q57 78 54 69 Z" fill="#393148"/>
+                  <path d="M58 76 Q62 72 67 75 Q63 80 58 76 Z" fill="#edabc6"/>
+                </g>
               </svg>
               <div class="pack-foot"><span>云塘校区</span><span>1 DISH · 随机</span></div>
             </div>
@@ -3212,7 +3243,11 @@ body::before{
       el.style.strokeDashoffset = String(100 - p * 100);
     });
 
-    $('#packMouth').classList.toggle('open', p > .02);
+    const pulled = p > .02;
+    $('#packMouth').classList.toggle('open', pulled);
+    const mascot = $('#packMascot');
+    const expression = packState.torn ? 'happy' : pulled ? 'surprised' : 'smile';
+    if (mascot.dataset.expression !== expression) mascot.dataset.expression = expression;
   }
 
   function resetOverlay(){
