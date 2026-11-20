@@ -432,10 +432,15 @@ h1,h2,h3,p{margin:0}
   transition:height .55s var(--ease);
   user-select:none;-webkit-user-select:none;
 }
+.pack-stage::before{
+  content:"";position:absolute;left:17%;right:17%;bottom:-18px;height:12px;
+  border-radius:50%;background:rgba(0,0,0,.35);filter:blur(9px);
+  transition:opacity .4s;
+}
 .pack-float{
   width:100%;height:100%;display:flex;align-items:center;justify-content:center;
   animation:packFloat 6s ease-in-out infinite;
-  filter:drop-shadow(0 26px 22px rgba(0,0,0,.42));
+  transform-style:preserve-3d;
 }
 @keyframes packFloat{
   0%,100%{transform:translateY(0) rotate(-1.1deg)}
@@ -450,24 +455,36 @@ h1,h2,h3,p{margin:0}
 .pack.grabbing{cursor:grabbing}
 .pack-body{position:absolute;inset:0;transform-style:preserve-3d}
 .pack-face{
-  position:absolute;inset:0;border-radius:16px 16px 13px 13px;
-  backface-visibility:hidden;overflow:hidden;
+  position:absolute;inset:0;border-radius:3px;
+  backface-visibility:hidden;overflow:hidden;clip-path:var(--foil-outline);
 }
 .pack-front{
-  transform:translateZ(13px);
+  transform:translateZ(5px);
   background:
-    linear-gradient(112deg,rgba(255,255,255,.5) 0 7%,transparent 18% 46%,rgba(255,255,255,.24) 52%,transparent 66% 100%),
-    linear-gradient(158deg,var(--pk1),var(--pk2) 42%,var(--pk3));
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.35),inset 0 -34px 46px var(--pk-shade);
+    linear-gradient(90deg,rgba(6,13,43,.22),rgba(255,255,255,.38) 2%,transparent 6% 92%,rgba(255,255,255,.24) 96%,rgba(0,0,0,.18)),
+    linear-gradient(106deg,rgba(255,255,255,.20),transparent 22% 69%,rgba(255,255,255,.08) 79%,transparent 87%),
+    linear-gradient(160deg,var(--pk1),var(--pk2) 46%,var(--pk3));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.26),inset 0 -24px 30px var(--pk-shade);
+}
+.pack-front::before{
+  content:"";position:absolute;left:0;right:0;bottom:0;height:28px;
+  background:
+    repeating-linear-gradient(90deg,rgba(255,255,255,.22) 0 1px,transparent 1px 3px,rgba(0,0,0,.12) 3px 4px),
+    linear-gradient(180deg,var(--pk2),var(--pk3));
+  box-shadow:inset 0 1px 2px rgba(255,255,255,.26);
 }
 .pack-front::after{
   content:"";position:absolute;inset:0;pointer-events:none;
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='140' height='140' filter='url(%23n)'/></svg>");
-  background-size:140px 140px;opacity:.16;mix-blend-mode:overlay;
+  background-size:140px 140px;opacity:.06;mix-blend-mode:overlay;
 }
 .pack-back{
-  transform:rotateY(180deg) translateZ(13px);
+  transform:rotateY(180deg) translateZ(5px);
   background:linear-gradient(158deg,var(--pk-back1),var(--pk-back2) 60%,var(--pk-back3));
+}
+.pack-back::before{
+  content:"";position:absolute;top:0;bottom:0;left:46%;width:8%;
+  background:linear-gradient(90deg,rgba(0,0,0,.22),rgba(255,255,255,.22) 35%,transparent);
 }
 .pack-back::after{
   content:"";position:absolute;inset:0;pointer-events:none;
@@ -483,17 +500,19 @@ h1,h2,h3,p{margin:0}
 .pb-sub{font-size:11px;color:rgba(255,255,255,.55)}
 .pb-mark{font-size:34px;opacity:.35}
 .pack-side{
-  position:absolute;top:2px;bottom:2px;width:26px;
+  position:absolute;top:32px;bottom:26px;width:10px;backface-visibility:hidden;
   background:linear-gradient(180deg,var(--pk-side1),var(--pk-side2));
 }
-.pack-side-l{left:-13px;transform:rotateY(-90deg);transform-origin:100% 50%}
-.pack-side-r{right:-13px;transform:rotateY(90deg);transform-origin:0 50%}
+.pack-side-l{left:-5px;transform:rotateY(-90deg);transform-origin:100% 50%}
+.pack-side-r{right:-5px;transform:rotateY(90deg);transform-origin:0 50%}
 .pack-strip{
-  position:absolute;left:0;right:0;top:0;height:46px;
-  transform:translate3d(0,0,19px);transform-origin:50% 100%;
-  background:linear-gradient(180deg,var(--pk-strip1),var(--pk-strip2) 55%,var(--pk-strip3));
-  border-radius:16px 16px 0 0;
-  box-shadow:0 3px 0 rgba(60,30,10,.22),inset 0 1px 0 rgba(255,255,255,.55),inset 0 -14px 18px rgba(90,40,10,.16);
+  position:absolute;left:0;right:0;top:0;height:40px;
+  transform:translate3d(0,0,7px);transform-origin:50% 100%;
+  background:
+    repeating-linear-gradient(90deg,rgba(255,255,255,.17) 0 1px,transparent 1px 3px,rgba(0,0,0,.08) 3px 4px),
+    linear-gradient(180deg,var(--pk-strip1),var(--pk-strip2) 55%,var(--pk-strip3));
+  border-radius:2px 2px 0 0;
+  box-shadow:inset 0 -1px 0 rgba(255,255,255,.28),inset 0 2px 6px rgba(255,255,255,.16);
   cursor:grab;touch-action:none;backface-visibility:hidden;
   will-change:transform,opacity;
 }
@@ -504,51 +523,55 @@ h1,h2,h3,p{margin:0}
 }
 .pack-strip.gone{opacity:0;pointer-events:none}
 .strip-tear{
-  position:absolute;left:50%;top:15px;transform:translateX(-50%);
-  font-size:9.5px;letter-spacing:2.4px;font-weight:800;
+  position:absolute;left:18px;top:15px;
+  font-size:9px;letter-spacing:1.7px;font-weight:700;
   color:rgba(255,255,255,.92);white-space:nowrap;
   text-shadow:0 1px 2px rgba(80,35,10,.3);
 }
 .strip-arrows{
-  position:absolute;left:50%;top:26px;transform:translateX(-50%);
-  font-size:10px;letter-spacing:7px;color:rgba(255,255,255,.66);
+  position:absolute;right:16px;top:14px;
+  font-size:10px;letter-spacing:1px;color:rgba(255,255,255,.76);
 }
 .pack-print{
-  position:absolute;inset:46px 0 0;padding:18px 20px 18px;
+  position:absolute;inset:40px 0 26px;padding:14px 22px 10px;
   display:flex;flex-direction:column;align-items:center;
   pointer-events:none;
 }
-.pack-brand{font-size:25px;font-weight:900;color:#fff;letter-spacing:1px;text-shadow:0 2px 6px rgba(70,30,10,.25)}
-.pack-sub{font-size:8.5px;letter-spacing:3px;color:rgba(255,255,255,.72);margin-top:1px}
-.holo-star{width:min(50%,140px);margin:18px 0 auto;filter:drop-shadow(0 6px 14px rgba(70,30,10,.25))}
+.pack-brand{align-self:flex-start;font-size:26px;font-weight:800;color:#fff;letter-spacing:-.5px}
+.pack-sub{align-self:flex-start;font-size:9px;letter-spacing:2px;color:rgba(255,255,255,.72);margin-top:2px}
+.holo-star{width:94%;max-height:190px;flex:1;margin:12px 0 8px;filter:drop-shadow(0 7px 8px rgba(0,0,0,.24))}
 .pack-foot{
   width:100%;display:flex;justify-content:space-between;
   font-size:9px;letter-spacing:.8px;color:rgba(255,255,255,.7);
 }
 .pack-mouth{
-  position:absolute;left:0;right:0;top:40px;height:34px;
-  transform:translateZ(15px);opacity:0;pointer-events:none;
+  position:absolute;left:4px;right:4px;top:38px;height:10px;
+  transform:translateZ(6px);opacity:0;pointer-events:none;
   transition:opacity .2s;
 }
 .pack-mouth.open{opacity:1}
 .pack-gap{
   position:absolute;inset:0;
-  background:linear-gradient(180deg,#3b1707,rgba(59,23,7,.7) 45%,rgba(59,23,7,0));
-  box-shadow:inset 0 8px 12px rgba(0,0,0,.55);
+  border-radius:50%;
+  background:linear-gradient(180deg,#10152b,#272c43 55%,rgba(39,44,67,0));
+  box-shadow:inset 0 3px 5px rgba(0,0,0,.55);
 }
 .tear-svg{position:absolute;left:0;right:0;top:-7px;width:100%;height:28px;overflow:visible}
-#tearBase{fill:none;stroke:#4a1d07;stroke-width:4.2;stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:100}
+#tearBase{fill:none;stroke:#19213c;stroke-width:3;stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:100}
 #tearHi{fill:none;stroke:rgba(255,224,200,.5);stroke-width:1.4;stroke-dasharray:100;stroke-dashoffset:100;transform:translateY(-2.4px)}
 .pack-cards{
-  position:absolute;left:15px;right:15px;top:40px;bottom:16px;
+  position:absolute;left:18px;right:18px;top:42px;bottom:28px;
   transform-style:preserve-3d;
 }
 .pack-card{
   position:absolute;inset:0;transform-style:preserve-3d;
-  transform:translate3d(0,0,2px) rotateY(180deg);
-  transition:transform 1.05s cubic-bezier(.2,.9,.2,1);
+  transform:translate3d(0,0,0) rotateY(180deg);
+  will-change:transform;
 }
-.pack.teared .pack-card{transform:translate3d(0,-30%,38px) rotateY(0deg)}
+.pack.teared .pack-card{transform:translate3d(0,-10%,56px) rotateY(0deg)}
+.pack.teared .pack-body{transform:translateY(90%);opacity:0;pointer-events:none}
+.pack.opening .pack-front,.pack.teared .pack-front,
+.pack.opening .pack-back,.pack.teared .pack-back{clip-path:var(--foil-open-outline)}
 .pack.instant .pack-card{transition:none}
 .pc-inner{position:absolute;inset:0;transform-style:preserve-3d}
 .pc-face{position:absolute;inset:0;border-radius:12px;backface-visibility:hidden;overflow:hidden}
@@ -564,13 +587,13 @@ h1,h2,h3,p{margin:0}
   background:linear-gradient(115deg,rgba(255,255,255,.85),transparent 42%,rgba(255,214,180,.35));
   mix-blend-mode:screen;
 }
-.pc-kicker{font-size:10px;letter-spacing:2.6px;color:#c66a37;font-weight:800}
+.pc-kicker{font-size:12px;letter-spacing:2px;color:#c66a37;font-weight:800}
 .pc-name{
   font-size:18px;font-weight:900;color:#3b2415;line-height:1.3;
   display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
 }
 .pc-meta{
-  font-size:9.5px;color:#8f6a51;line-height:1.4;max-width:100%;
+  font-size:13px;color:#77533b;line-height:1.5;max-width:100%;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
 }
 .pc-star{font-size:20px;color:#f08a4b;opacity:.55;margin-top:4px}
@@ -583,8 +606,10 @@ h1,h2,h3,p{margin:0}
   box-shadow:inset 0 0 0 1px rgba(255,255,255,.2);
 }
 .pc-back span{font-size:42px;color:rgba(255,255,255,.3);font-weight:900}
-.pack-stage.teared{height:266px}
-.pack-stage.teared .pack-float{animation:none;transform:scale(.66) translateY(-10px);transition:transform .6s var(--ease)}
+.pack-stage.opening .pack-float,.pack-stage.teared .pack-float{animation:none}
+.pack-stage.teared{height:240px}
+.pack-stage.teared .pack-float{transform:scale(.8);transition:transform .5s var(--ease)}
+.pack-stage.teared::before{opacity:0}
 .pack-hint{
   position:absolute;left:50%;bottom:-26px;transform:translateX(-50%);
   width:max-content;max-width:min(90vw,320px);text-align:center;
@@ -602,7 +627,7 @@ h1,h2,h3,p{margin:0}
   pointer-events:none;
 }
 .pack-scrap.show{opacity:.85;transform:translate(-50%,0) rotate(-7deg) scale(1)}
-.pack-stage.teared .pack-hint{opacity:0}
+.pack-stage.opening .pack-hint,.pack-stage.teared .pack-hint{opacity:0}
 
 @media (prefers-reduced-motion: reduce){
   .pack-float{animation:none}
@@ -1090,44 +1115,42 @@ body::before{
   grid-column:span 2;
   aspect-ratio:3/3.9;
   padding:42px 10px 18px;
-  border:3px solid #493322;
+  border:1px solid rgba(255,255,255,.3);
   border-radius:3px;
   background-image:
-    linear-gradient(90deg,rgba(255,255,255,.1) 50%,transparent 50%),
-    linear-gradient(160deg,var(--pk1) 0 28%,var(--pk2) 28% 70%,var(--pk3) 70%);
-  background-size:8px 8px,auto;
-  box-shadow:0 6px 0 #493322,0 10px 0 rgba(73,51,34,.16),0 18px 26px rgba(73,51,34,.15);
+    repeating-linear-gradient(90deg,rgba(255,255,255,.10) 0 1px,transparent 1px 4px),
+    linear-gradient(160deg,var(--pk1),var(--pk2) 46%,var(--pk3));
+  background-size:100% 18px,auto;background-repeat:repeat-x,no-repeat;
+  box-shadow:inset 3px 0 5px rgba(255,255,255,.22),inset -3px 0 5px rgba(0,0,0,.16),0 8px 14px rgba(73,51,34,.22);
 }
 .pack-pick:nth-child(4){grid-column:2/span 2}
 .pack-pick:hover{
-  transform:translateY(-6px);
-  box-shadow:0 12px 0 #493322,0 16px 0 rgba(73,51,34,.14),0 24px 30px rgba(73,51,34,.18);
+  transform:translateY(-6px) rotate(-1deg);
+  box-shadow:inset 3px 0 5px rgba(255,255,255,.22),inset -3px 0 5px rgba(0,0,0,.16),0 16px 24px rgba(73,51,34,.25);
 }
 .pack-pick:active{
-  transform:translateY(4px);
-  box-shadow:0 2px 0 #493322,0 5px 0 rgba(73,51,34,.16);
+  transform:translateY(1px);
 }
 .pack-pick::before{
-  height:32px;
-  border-bottom:3px solid #493322;
-  background:linear-gradient(180deg,#fff4d6 0 50%,var(--pk1) 50%);
+  height:25px;
+  border-bottom:1px solid rgba(255,255,255,.25);
+  background:repeating-linear-gradient(90deg,rgba(255,255,255,.25) 0 1px,transparent 1px 3px),var(--pk2);
 }
 .pack-pick::after{
-  background:linear-gradient(110deg,rgba(255,255,255,.4) 0 10%,transparent 10% 72%,rgba(255,255,255,.16) 72% 82%,transparent 82%);
+  background:linear-gradient(104deg,rgba(255,255,255,.2),transparent 30% 75%,rgba(255,255,255,.12));
   mix-blend-mode:normal;
 }
 .pp-tear{
   top:10px;
   font-family:"Courier New",monospace;
   font-size:9px;
-  font-weight:900;
+  font-weight:700;color:rgba(255,255,255,.86);
 }
 .pp-star{
   width:54px;
   height:54px;
   margin-bottom:6px;
-  image-rendering:pixelated;
-  filter:drop-shadow(3px 3px 0 rgba(73,51,34,.3));
+  filter:drop-shadow(0 3px 4px rgba(20,20,40,.22));
 }
 .pp-name{
   padding:3px 8px;
@@ -1603,7 +1626,7 @@ body::before{
         <span class="pp-no">02</span>
       </button>
 
-      <button class="pack-pick" data-theme="soda" type="button" style="--pk1:#b8e6ff;--pk2:#7fc9f2;--pk3:#4a9fdd">
+      <button class="pack-pick" data-theme="soda" type="button" style="--pk1:#505dff;--pk2:#303ee8;--pk3:#2030c4">
         <span class="pp-tear">TEAR HERE</span>
         <svg class="pp-star" viewBox="0 0 16 16" aria-hidden="true">
           <path d="M7 1h2v4h4v2h-4v4h-2V7H3V5h4z" fill="#173a52"/>
@@ -1648,17 +1671,8 @@ body::before{
   <div class="pack-stage" id="packStage">
     <div class="pack-float" id="packFloat">
       <div class="pack" id="pack" aria-label="可旋转的食堂盲盒卡包">
-        <div class="pack-body">
-          <div class="pack-face pack-back">
-            <div class="pack-back-print">
-              <div class="pb-title">SWIPE TO TEAR</div>
-              <div class="pb-mark">✦</div>
-              <div class="pb-sub">沿顶部封条左右划开</div>
-            </div>
-          </div>
-
           <div class="pack-cards" id="packCards">
-            <div class="pack-card" id="packCard">
+            <div class="pack-card" id="packCard" aria-hidden="true">
               <div class="pc-inner">
                 <div class="pc-face pc-front">
                   <div class="pc-kicker">今日盲盒</div>
@@ -1671,18 +1685,29 @@ body::before{
             </div>
           </div>
 
+        <div class="pack-body">
+          <div class="pack-face pack-back">
+            <div class="pack-back-print">
+              <div class="pb-title">食堂盲盒</div>
+              <div class="pb-mark">✦</div>
+              <div class="pb-sub">沿顶部封条左右划开</div>
+            </div>
+          </div>
           <div class="pack-face pack-front">
             <div class="pack-print">
               <div class="pack-brand">食堂盲盒</div>
               <div class="pack-sub">TODAY'S LUNCH</div>
               <svg class="holo-star" viewBox="0 0 120 120" aria-hidden="true">
                 <defs>
-                  <linearGradient id="holoGrad" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0" stop-color="#ffe9a8"/>
-                    <stop offset=".28" stop-color="#ffc2e2"/>
-                    <stop offset=".52" stop-color="#b9e6ff"/>
-                    <stop offset=".76" stop-color="#d9c6ff"/>
-                    <stop offset="1" stop-color="#ffe0b0"/>
+                  <linearGradient id="holoGrad" x1="0" y1=".2" x2="1" y2=".8">
+                    <stop offset="0" stop-color="#c3e4fb"/>
+                    <stop offset=".18" stop-color="#bbb0ef"/>
+                    <stop offset=".35" stop-color="#f0bcd9"/>
+                    <stop offset=".48" stop-color="#f1e4ac"/>
+                    <stop offset=".60" stop-color="#b8e2d0"/>
+                    <stop offset=".76" stop-color="#a9cef2"/>
+                    <stop offset=".90" stop-color="#d7b9e8"/>
+                    <stop offset="1" stop-color="#ece3b7"/>
                   </linearGradient>
                   <radialGradient id="holoGlow" cx=".32" cy=".24" r=".85">
                     <stop offset="0" stop-color="#fff" stop-opacity=".95"/>
@@ -1690,13 +1715,18 @@ body::before{
                     <stop offset="1" stop-color="#fff" stop-opacity="0"/>
                   </radialGradient>
                 </defs>
-                <path d="M60 6 C63 32 66 37 94 40 C66 43 63 48 60 74 C57 48 54 43 26 40 C54 37 57 32 60 6 Z"
-                      fill="url(#holoGrad)" stroke="rgba(255,255,255,.8)" stroke-width="1.6"/>
-                <path d="M60 6 C63 32 66 37 94 40 C66 43 63 48 60 74 C57 48 54 43 26 40 C54 37 57 32 60 6 Z"
+                <path d="M64 5 C69 5 72 31 79 39 C86 46 112 48 113 55 C114 63 87 69 80 77 C73 85 72 112 64 114 C56 115 50 88 42 80 C34 72 7 68 6 60 C5 52 32 46 40 38 C48 30 56 5 64 5 Z"
+                      fill="url(#holoGrad)" stroke="#d4dcf5" stroke-width="1.5"/>
+                <path d="M64 5 C69 5 72 31 79 39 C86 46 112 48 113 55 C114 63 87 69 80 77 C73 85 72 112 64 114 C56 115 50 88 42 80 C34 72 7 68 6 60 C5 52 32 46 40 38 C48 30 56 5 64 5 Z"
                       fill="url(#holoGlow)"/>
-                <circle cx="52" cy="41" r="3.1" fill="#3a2a20"/>
-                <circle cx="68" cy="41" r="3.1" fill="#3a2a20"/>
-                <path d="M54 49 Q60 55 66 49" fill="none" stroke="#3a2a20" stroke-width="2.6" stroke-linecap="round"/>
+                <path d="M64 10 Q62 39 57 54 Q43 54 17 59 Q45 61 57 66 Q62 85 64 106 Q67 78 72 65 Q88 59 104 56 Q83 55 73 51 Q67 32 64 10 Z" fill="rgba(255,255,255,.55)"/>
+                <ellipse cx="49" cy="64" rx="4.5" ry="7" fill="#292d3d"/>
+                <ellipse cx="73" cy="61" rx="4.5" ry="7" fill="#292d3d"/>
+                <circle cx="48" cy="61" r="1.8" fill="#fff"/>
+                <circle cx="72" cy="58" r="1.8" fill="#fff"/>
+                <ellipse cx="41" cy="73" rx="5" ry="2.8" fill="#edabc6" opacity=".75"/>
+                <ellipse cx="82" cy="70" rx="5" ry="2.8" fill="#edabc6" opacity=".75"/>
+                <path d="M57 73 Q62 78 67 71" fill="none" stroke="#393148" stroke-width="2" stroke-linecap="round"/>
               </svg>
               <div class="pack-foot"><span>云塘校区</span><span>1 DISH · 随机</span></div>
             </div>
@@ -1715,7 +1745,7 @@ body::before{
 
           <div class="pack-strip" id="packStrip" role="button" tabindex="0" aria-label="按住封条，左右滑动撕开卡包">
             <span class="strip-tear">TEAR HERE</span>
-            <span class="strip-arrows">← →</span>
+            <span class="strip-arrows">横向撕开</span>
           </div>
         </div>
       </div>
@@ -2960,12 +2990,12 @@ body::before{
       'pk-shade':'rgba(30,70,20,.24)'
     },
     soda:{
-      pk1:'#b8e6ff', pk2:'#7fc9f2', pk3:'#4a9fdd',
-      'pk-strip1':'#effbff', 'pk-strip2':'#b8e6ff', 'pk-strip3':'#7fc9f2',
-      'pk-side1':'#3a86b8', 'pk-side2':'#2b6a94',
-      'pk-back1':'#3a8ac4', 'pk-back2':'#2b6f9f', 'pk-back3':'#1f557c',
-      'pk-scrap1':'#b8e6ff', 'pk-scrap2':'#4a9fdd',
-      'pk-shade':'rgba(20,60,90,.24)'
+      pk1:'#505dff', pk2:'#303ee8', pk3:'#2030c4',
+      'pk-strip1':'#4c59f4', 'pk-strip2':'#3444e8', 'pk-strip3':'#2736ca',
+      'pk-side1':'#2638b9', 'pk-side2':'#142481',
+      'pk-back1':'#3649d9', 'pk-back2':'#2738b4', 'pk-back3':'#1a287c',
+      'pk-scrap1':'#505dff', 'pk-scrap2':'#2030c4',
+      'pk-shade':'rgba(12,16,82,.26)'
     },
     grape:{
       pk1:'#e3c7ff', pk2:'#c19ae8', pk3:'#9a6cc9',
@@ -2999,6 +3029,7 @@ body::before{
 
   const anim = {
     timers: [],
+    animations: [],
     running: false,
     onSkip: null
   };
@@ -3008,7 +3039,7 @@ body::before{
     mode:null, startX:0, startY:0, baseX:-7, baseY:12,
     moved:0, downAt:0,
     progress:0, dir:1, pct:-1,
-    torn:false, result:null, raf:null
+    torn:false, result:null, raf:null, tearRaf:null, mountRaf:null
   };
 
   function packClamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
@@ -3037,6 +3068,12 @@ body::before{
   function clearTimers(){
     anim.timers.forEach(t => clearTimeout(t));
     anim.timers = [];
+    anim.animations.forEach(animation => animation.cancel());
+    anim.animations = [];
+    ['raf', 'tearRaf', 'mountRaf'].forEach(key => {
+      if (packState[key] != null) cancelAnimationFrame(packState[key]);
+      packState[key] = null;
+    });
   }
 
   function later(fn, ms){
@@ -3065,6 +3102,22 @@ body::before{
     return pts.join(' ');
   }
 
+  function foilOutline(opened){
+    const points = [];
+    if (opened) points.push('0% 11%', '100% 11%');
+    else {
+      for (let i = 0; i <= 48; i++){
+        points.push((i * 100 / 48).toFixed(2) + '% ' + (i % 2 ? 1.2 : 0) + '%');
+      }
+    }
+    points.push('98.5% 14%', '99.5% 50%', '98.5% 88%', '100% 98.8%');
+    for (let i = 48; i >= 0; i--){
+      points.push((i * 100 / 48).toFixed(2) + '% ' + (i % 2 ? 98.8 : 100) + '%');
+    }
+    points.push('1.5% 88%', '.5% 50%', '1.5% 14%');
+    return 'polygon(' + points.join(',') + ')';
+  }
+
   function mountPack(result){
     const s = result.store;
     const d = result.dish;
@@ -3074,7 +3127,9 @@ body::before{
     $('#packHint').textContent = reduceMotion
       ? '点击顶部封条即可撕开'
       : '拖动卡包可旋转 · 按住顶部封条左右划开';
-    $('#packStrip').style.clipPath = zigzagClip(24, 15);
+    $('#pack').style.setProperty('--foil-outline', foilOutline(false));
+    $('#pack').style.setProperty('--foil-open-outline', foilOutline(true));
+    $('#packStrip').style.clipPath = zigzagClip(48, 10);
     $('#packGap').style.clipPath = zigzagClip(20, 12);
     const dPath = randomTearPath();
     $('#tearBase').setAttribute('d', dPath);
@@ -3096,7 +3151,7 @@ body::before{
       ? 'transform .32s cubic-bezier(.22,1,.36,1), opacity .2s'
       : 'none';
     strip.style.transform = 'translate3d(' + (dir * p * 118).toFixed(2) + '%,' +
-      (-p * 16).toFixed(2) + 'px,19px) rotateZ(' + (dir * p * 12).toFixed(2) + 'deg)';
+      (-p * 16).toFixed(2) + 'px,7px) rotateZ(' + (dir * p * 12).toFixed(2) + 'deg)';
     strip.style.opacity = p > .97 ? '0' : '1';
 
     const svg = $('#tearSvg');
@@ -3115,7 +3170,6 @@ body::before{
     clearTimers();
     anim.running = false;
     anim.onSkip = null;
-    if (packState.raf){ cancelAnimationFrame(packState.raf); packState.raf = null; }
     packState.mode = null;
     packState.rotX = -7;
     packState.rotY = 12;
@@ -3126,11 +3180,11 @@ body::before{
     packState.result = null;
 
     const stage = $('#packStage');
-    if (stage) stage.classList.remove('teared');
+    if (stage) stage.classList.remove('teared', 'opening');
     const pack = $('#pack');
     if (pack){
       pack.classList.add('instant');
-      pack.classList.remove('teared', 'grabbing');
+      pack.classList.remove('teared', 'grabbing', 'opening');
     }
     applyRotation(false);
 
@@ -3142,13 +3196,17 @@ body::before{
     updateTear(0, 1, false);
     $('#packScrap').classList.remove('show');
     $('#packHint').classList.remove('pulse');
+    $('#packCard').setAttribute('aria-hidden', 'true');
     $('#reveal').classList.remove('show');
+    $('#btnSkip').hidden = false;
     $('#btnSkip').style.opacity = '1';
     $('#btnSkip').style.pointerEvents = 'auto';
   }
 
   function autoTear(){
-    if (packState.torn || !packState.result) return;
+    if (packState.torn || !packState.result || packState.tearRaf != null) return;
+    if (packState.raf != null) cancelAnimationFrame(packState.raf);
+    packState.raf = null;
     const dir = packState.dir || 1;
     if (reduceMotion){
       completeTear();
@@ -3157,71 +3215,98 @@ body::before{
     const dur = 440;
     const t0 = performance.now();
     const step = t => {
-      if (packState.torn) return;
+      if (packState.torn || !packState.result) return;
       const k = Math.min(1, (t - t0) / dur);
       updateTear(1 - Math.pow(1 - k, 3), dir, false);
-      if (k < 1) requestAnimationFrame(step);
-      else completeTear();
+      if (k < 1) packState.tearRaf = requestAnimationFrame(step);
+      else {
+        packState.tearRaf = null;
+        completeTear();
+      }
     };
-    requestAnimationFrame(step);
+    packState.tearRaf = requestAnimationFrame(step);
   }
 
   function completeTear(){
     const result = packState.result;
     if (!result || packState.torn) return;
     packState.torn = true;
+    packState.mode = null;
+    if (packState.raf != null) cancelAnimationFrame(packState.raf);
+    if (packState.tearRaf != null) cancelAnimationFrame(packState.tearRaf);
+    packState.raf = packState.tearRaf = null;
     updateTear(1, packState.dir, true);
-    packState.rotX = -5;
-    packState.rotY = 4;
+    packState.rotX = -3;
+    packState.rotY = 0;
     applyRotation(true);
 
     $('#packStrip').classList.add('gone');
-    $('#pack').classList.add('teared');
-    $('#packStage').classList.add('teared');
+    $('#pack').classList.remove('grabbing');
+    $('#pack').classList.add('opening');
+    $('#packStage').classList.add('opening');
     $('#packHint').classList.remove('pulse');
-    $('#packHint').textContent = '撕开了 · 卡面朝上';
-    $('#packScrap').classList.add('show');
-    $('#btnSkip').style.opacity = '0';
-    $('#btnSkip').style.pointerEvents = 'none';
 
+    // The card stays behind the front foil until its bottom clears the mouth.
+    // Only then may it move forward and turn over.
+    const timing = { duration:1450, easing:'cubic-bezier(.4,0,.2,1)', fill:'forwards' };
+    const sleeve = $('.pack-body').animate([
+      { transform:'translateY(0)', opacity:1, offset:0 },
+      { transform:'translateY(58%)', opacity:1, offset:.64 },
+      { transform:'translateY(90%)', opacity:0, offset:1 }
+    ], timing);
+    const card = $('#packCard').animate([
+      { transform:'translate3d(0,0,0) rotateY(180deg)', offset:0 },
+      { transform:'translate3d(0,-44%,0) rotateY(180deg)', offset:.64 },
+      { transform:'translate3d(0,-10%,56px) rotateY(0deg)', offset:1 }
+    ], timing);
+    anim.animations.push(sleeve, card);
     tone(900, 120, 'sine', 0.05);
-    later(() => tone(1320, 420, 'sine', 0.055), 120);
-    later(() => {
-      fillReveal(result);
-      $('#reveal').classList.add('show');
-      const accept = $('#btnAccept');
-      if (accept) accept.focus({ preventScroll:true });
-      announce('抽到了' + (result.dish ? result.dish.name : result.store.name) + '，' + canteenName(result.store.canteenId));
-    }, 720);
+    card.onfinish = () => {
+      if (packState.result === result && $('#overlay').classList.contains('show')){
+        finishPackReveal(result);
+      }
+    };
+  }
 
+  function finishPackReveal(result){
+    $('#pack').classList.remove('opening');
+    $('#pack').classList.add('teared');
+    $('#packStage').classList.remove('opening');
+    $('#packStage').classList.add('teared');
+    anim.animations.forEach(animation => animation.cancel());
+    anim.animations = [];
+    $('#packCard').setAttribute('aria-hidden', 'false');
+    $('#packHint').textContent = '已撕开';
+    $('#btnSkip').hidden = true;
+    fillReveal(result);
+    $('#reveal').classList.add('show');
     anim.running = false;
     anim.onSkip = null;
+    tone(1320, 420, 'sine', 0.055);
+    const accept = $('#btnAccept');
+    if (accept) accept.focus({ preventScroll:true });
+    announce('抽到了' + (result.dish ? result.dish.name : result.store.name) + '，' + canteenName(result.store.canteenId));
   }
 
   function revealInstantly(result){
+    resetOverlay();
     mountPack(result);
     packState.result = result;
     packState.dir = 1;
     packState.torn = true;
-    packState.rotX = -5;
-    packState.rotY = 4;
-    applyRotation(true);
+    packState.rotX = -3;
+    packState.rotY = 0;
+    applyRotation(false);
     $('#packStrip').classList.add('gone');
-    $('#pack').classList.add('teared');
-    $('#packStage').classList.add('teared');
-    $('#packHint').textContent = '已撕开';
     updateTear(1, 1, false);
-    $('#btnSkip').style.opacity = '0';
-    $('#btnSkip').style.pointerEvents = 'none';
-    fillReveal(result);
-    $('#reveal').classList.add('show');
-    announce('抽到了' + (result.dish ? result.dish.name : result.store.name));
+    finishPackReveal(result);
   }
 
   function glide(vx, vy){
     if (packState.raf) cancelAnimationFrame(packState.raf);
     let last = performance.now();
     const step = t => {
+      if (packState.torn || packState.mode) return;
       const dt = Math.min(32, t - last);
       last = t;
       vx *= Math.pow(0.94, dt / 16.67);
@@ -3249,6 +3334,8 @@ body::before{
       if (packState.torn) return;
       if (e.button != null && e.button !== 0) return;
       e.preventDefault();
+      if (packState.raf != null) cancelAnimationFrame(packState.raf);
+      packState.raf = null;
       pack.classList.add('grabbing');
       packState.mode = e.target.closest('#packStrip') ? 'tear' : 'rotate';
       packState.startX = e.clientX;
@@ -3287,12 +3374,16 @@ body::before{
       e.preventDefault();
     }, { passive:false });
 
-    const onEnd = () => {
+    const onEnd = event => {
       if (!packState.mode) return;
       const mode = packState.mode;
       packState.mode = null;
       pack.classList.remove('grabbing');
 
+      if (event.type === 'pointercancel'){
+        updateTear(0, packState.dir, true);
+        return;
+      }
       if (mode === 'tear'){
         if (packState.torn) return;
         if (packState.progress >= 0.92){
@@ -3383,13 +3474,15 @@ body::before{
     openOverlay();
     mountPack(result);
     const packEl = $('#pack');
-    if (packEl) requestAnimationFrame(() => packEl.classList.remove('instant'));
+    if (packEl) packState.mountRaf = requestAnimationFrame(() => {
+      packEl.classList.remove('instant');
+      packState.mountRaf = null;
+    });
     packState.result = result;
     anim.running = true;
     anim.onSkip = function(){
       if (!anim.running) return;
-      packState.dir = packState.dir || 1;
-      autoTear();
+      revealInstantly(result);
     };
     $('#packHint').classList.add('pulse');
     if (!state.settings.seen){
