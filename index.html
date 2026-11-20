@@ -447,7 +447,7 @@ h1,h2,h3,p{margin:0}
   50%{transform:translateY(-9px) rotate(1.1deg)}
 }
 .pack{
-  --foil-half-depth:10px;
+  --foil-half-depth:16px;
   --foil-join-depth:calc(var(--foil-half-depth) + .35px);
   --foil-strip-depth:calc(var(--foil-half-depth) + 2px);
   position:relative;width:100%;aspect-ratio:264/360;
@@ -467,6 +467,7 @@ h1,h2,h3,p{margin:0}
     linear-gradient(90deg,rgba(6,13,43,.42),rgba(6,13,43,.13) 3%,transparent 12% 88%,rgba(6,13,43,.13) 97%,rgba(6,13,43,.42)),
     radial-gradient(ellipse 13% 42% at 6% 49%,rgba(255,255,255,.33),transparent),
     radial-gradient(ellipse 13% 42% at 94% 49%,rgba(255,255,255,.27),transparent),
+    radial-gradient(ellipse 58% 49% at 42% 42%,rgba(255,255,255,.16),transparent 82%),
     linear-gradient(180deg,var(--pk-shade),transparent 26% 74%,var(--pk-shade)),
     linear-gradient(106deg,rgba(255,255,255,.16),transparent 24% 72%,rgba(255,255,255,.08) 82%,transparent 92%),
     linear-gradient(160deg,var(--pk1),var(--pk2) 46%,var(--pk3));
@@ -482,6 +483,13 @@ h1,h2,h3,p{margin:0}
   content:"";position:absolute;inset:0;pointer-events:none;
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='140' height='140' filter='url(%23n)'/></svg>");
   background-size:140px 140px;opacity:.06;mix-blend-mode:overlay;
+}
+.pack-creases{
+  position:absolute;inset:var(--foil-mouth-top) 0 28px;pointer-events:none;opacity:0;
+  background:
+    linear-gradient(163deg,transparent 23%,rgba(6,13,43,.23) 27%,rgba(255,255,255,.26) 28.4%,transparent 33%),
+    linear-gradient(22deg,transparent 29%,rgba(6,13,43,.19) 33%,rgba(255,255,255,.19) 34.3%,transparent 38%),
+    linear-gradient(172deg,transparent 69%,rgba(6,13,43,.31) 76%,rgba(255,255,255,.18) 77.3%,transparent 82%);
 }
 .pack-back{
   transform:rotateY(180deg) translateZ(var(--foil-half-depth));
@@ -512,7 +520,6 @@ h1,h2,h3,p{margin:0}
 .pack-side{
   width:calc(var(--foil-join-depth) * 2);transform-origin:0 0;
   background:linear-gradient(90deg,var(--pk-side2),var(--pk-side1) 50%,var(--pk-side2));
-  transform:skewX(var(--wall-skew)) translateZ(var(--wall-z)) rotateY(var(--wall-angle));
 }
 .pack-side-l{--wall-z:calc(-1 * var(--foil-join-depth));--wall-angle:-90deg}
 .pack-side-r{--wall-z:var(--foil-join-depth);--wall-angle:90deg}
@@ -604,7 +611,7 @@ h1,h2,h3,p{margin:0}
 }
 .pack.opening .pack-card,.pack.teared .pack-card{visibility:visible}
 .pack.teared .pack-card{transform:translate3d(0,-10%,56px) rotateY(0deg)}
-.pack.teared .pack-body{transform:translateY(90%);opacity:0;pointer-events:none}
+.pack.teared .pack-body{transform:translateY(90%) scaleZ(.14);opacity:0;pointer-events:none}
 .pack.opening .pack-front,.pack.teared .pack-front,
 .pack.opening .pack-back,.pack.teared .pack-back{clip-path:var(--foil-open-outline)}
 .pack.instant .pack-card{transition:none}
@@ -1729,6 +1736,7 @@ body::before{
             </div>
           </div>
           <div class="pack-face pack-front">
+            <div class="pack-creases" aria-hidden="true"></div>
             <div class="pack-print">
               <div class="pack-brand">食堂盲盒</div>
               <div class="pack-sub">TODAY'S LUNCH</div>
@@ -3155,14 +3163,14 @@ body::before{
 
   // Shared silhouette for both foil faces and the walls between them.
   const FOIL_EDGE = [
-    [3.2, 0], [3.2, 11], [4.3, 14], [3.15, 24], [1.2, 36], [.2, 47],
-    [0, 54], [.5, 66], [1.9, 77], [4.2, 88], [3.2, 92], [3.2, 98.8], [3.2, 100]
+    [4.4, 0], [4.4, 11], [5.6, 14], [4.4, 24], [2, 36], [.35, 47],
+    [0, 54], [.65, 66], [2.7, 77], [5.5, 88], [4.4, 92], [4.4, 98.8], [4.4, 100]
   ];
 
-  function foilOutline(opened){
-    const edge = opened ? FOIL_EDGE.slice(1) : FOIL_EDGE;
+  function foilOutline(opened, silhouette = FOIL_EDGE){
+    const edge = opened ? silhouette.slice(1) : silhouette;
     const shoulders = edge.slice(1, -1);
-    const sealInset = FOIL_EDGE[0][0];
+    const sealInset = silhouette[0][0];
     const toothX = i => (sealInset + i * (100 - 2 * sealInset) / 48).toFixed(2) + '% ';
     const points = [];
     if (opened){
@@ -3181,10 +3189,17 @@ body::before{
     return 'polygon(' + points.join(',') + ')';
   }
 
+  function foilWallTransform(skew){
+    return 'skewX(' + skew + 'deg) translateZ(var(--wall-z)) rotateY(var(--wall-angle))';
+  }
+
   function mountFoilShell(pack){
+    const sealInset = FOIL_EDGE[0][0];
+    const flatEdge = FOIL_EDGE.map(([, y]) => [sealInset, y]);
     pack.style.setProperty('--foil-outline', foilOutline(false));
     pack.style.setProperty('--foil-open-outline', foilOutline(true));
-    pack.style.setProperty('--foil-seal-inset', FOIL_EDGE[0][0] + '%');
+    pack.style.setProperty('--foil-flat-outline', foilOutline(true, flatEdge));
+    pack.style.setProperty('--foil-seal-inset', sealInset + '%');
     pack.style.setProperty('--foil-mouth-top', FOIL_EDGE[1][1] + '%');
 
     const [width, height] = getComputedStyle(pack).aspectRatio.split('/').map(Number);
@@ -3204,7 +3219,7 @@ body::before{
         const span = (nextY - y) + '%';
         // Overlap adjacent segment ends to prevent subpixel seams during rotation.
         wall.style.height = nextY === 100 ? span : 'calc(' + span + ' + .35px)';
-        wall.style.setProperty('--wall-skew', (left ? skew : -skew) + 'deg');
+        wall.style.transform = foilWallTransform(left ? skew : -skew);
         walls.append(wall);
       }
     }
@@ -3322,6 +3337,28 @@ body::before{
     packState.tearRaf = requestAnimationFrame(step);
   }
 
+  function deflateFoil(body, timing, clearedMouth){
+    const flatten = (part, full, flat) => {
+      anim.animations.push(part.animate([
+        { ...full, offset:0 },
+        { ...flat, offset:clearedMouth },
+        { ...flat, offset:1 }
+      ], timing));
+    };
+    for (const face of $$('.pack-face', body)){
+      flatten(face, { clipPath:'var(--foil-open-outline)' }, { clipPath:'var(--foil-flat-outline)' });
+    }
+    const sealInset = FOIL_EDGE[0][0];
+    const flatWall = foilWallTransform(0);
+    for (const wall of $$('.pack-side:not(.pack-sealed-edge)', body)){
+      const inset = wall.classList.contains('pack-side-l') ? sealInset : 100 - sealInset;
+      flatten(wall,
+        { left:wall.style.left, transform:wall.style.transform },
+        { left:inset + '%', transform:flatWall });
+    }
+    flatten($('.pack-creases', body), { opacity:0 }, { opacity:.76 });
+  }
+
   function completeTear(){
     const result = packState.result;
     if (!result || packState.torn) return;
@@ -3344,14 +3381,18 @@ body::before{
     // The card stays behind the front foil until its bottom clears the mouth.
     // Only then may it move forward and turn over.
     const timing = { duration:1450, easing:'cubic-bezier(.4,0,.2,1)', fill:'forwards' };
-    const sleeve = $('.pack-body').animate([
-      { transform:'translateY(0)', opacity:1, offset:0 },
-      { transform:'translateY(58%)', opacity:1, offset:.64 },
-      { transform:'translateY(90%)', opacity:0, offset:1 }
+    const clearedMouth = .64;
+    const body = $('.pack-body');
+    const sleeve = body.animate([
+      { transform:'translateY(0) scaleZ(1)', opacity:1, offset:0 },
+      { transform:'translateY(20%) scaleZ(.62)', opacity:1, offset:.22 },
+      { transform:'translateY(58%) scaleZ(.14)', opacity:1, offset:clearedMouth },
+      { transform:'translateY(90%) scaleZ(.14)', opacity:0, offset:1 }
     ], timing);
+    deflateFoil(body, timing, clearedMouth);
     const card = $('#packCard').animate([
       { transform:'translate3d(0,0,0) rotateY(180deg)', offset:0 },
-      { transform:'translate3d(0,-44%,0) rotateY(180deg)', offset:.64 },
+      { transform:'translate3d(0,-44%,0) rotateY(180deg)', offset:clearedMouth },
       { transform:'translate3d(0,-10%,56px) rotateY(0deg)', offset:1 }
     ], timing);
     anim.animations.push(sleeve, card);
