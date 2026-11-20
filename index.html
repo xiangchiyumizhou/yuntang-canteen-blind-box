@@ -447,8 +447,9 @@ h1,h2,h3,p{margin:0}
   50%{transform:translateY(-9px) rotate(1.1deg)}
 }
 .pack{
-  --foil-half-depth:5px;
+  --foil-half-depth:10px;
   --foil-join-depth:calc(var(--foil-half-depth) + .35px);
+  --foil-strip-depth:calc(var(--foil-half-depth) + 2px);
   position:relative;width:100%;aspect-ratio:264/360;
   transform-style:preserve-3d;
   transform:rotateX(-7deg) rotateY(12deg);
@@ -463,10 +464,12 @@ h1,h2,h3,p{margin:0}
 .pack-front{
   transform:translateZ(var(--foil-half-depth));
   background:
-    linear-gradient(90deg,rgba(6,13,43,.22),rgba(255,255,255,.38) 2%,transparent 6% 92%,rgba(255,255,255,.24) 96%,rgba(0,0,0,.18)),
-    linear-gradient(106deg,rgba(255,255,255,.20),transparent 22% 69%,rgba(255,255,255,.08) 79%,transparent 87%),
+    linear-gradient(90deg,rgba(6,13,43,.42),rgba(6,13,43,.13) 3%,transparent 12% 88%,rgba(6,13,43,.13) 97%,rgba(6,13,43,.42)),
+    radial-gradient(ellipse 13% 42% at 6% 49%,rgba(255,255,255,.33),transparent),
+    radial-gradient(ellipse 13% 42% at 94% 49%,rgba(255,255,255,.27),transparent),
+    linear-gradient(180deg,var(--pk-shade),transparent 26% 74%,var(--pk-shade)),
+    linear-gradient(106deg,rgba(255,255,255,.16),transparent 24% 72%,rgba(255,255,255,.08) 82%,transparent 92%),
     linear-gradient(160deg,var(--pk1),var(--pk2) 46%,var(--pk3));
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.26),inset 0 -24px 30px var(--pk-shade);
 }
 .pack-front::before{
   content:"";position:absolute;left:0;right:0;bottom:0;height:28px;
@@ -482,7 +485,11 @@ h1,h2,h3,p{margin:0}
 }
 .pack-back{
   transform:rotateY(180deg) translateZ(var(--foil-half-depth));
-  background:linear-gradient(158deg,var(--pk-back1),var(--pk-back2) 60%,var(--pk-back3));
+  background:
+    radial-gradient(ellipse 12% 44% at 6% 50%,rgba(255,255,255,.18),transparent),
+    radial-gradient(ellipse 12% 44% at 94% 50%,rgba(255,255,255,.16),transparent),
+    linear-gradient(90deg,rgba(6,13,43,.28),transparent 15% 85%,rgba(6,13,43,.28)),
+    linear-gradient(158deg,var(--pk-back1),var(--pk-back2) 60%,var(--pk-back3));
 }
 .pack-back::before{
   content:"";position:absolute;top:0;bottom:0;left:46%;width:8%;
@@ -510,7 +517,7 @@ h1,h2,h3,p{margin:0}
 .pack-side-l{--wall-z:calc(-1 * var(--foil-join-depth));--wall-angle:-90deg}
 .pack-side-r{--wall-z:var(--foil-join-depth);--wall-angle:90deg}
 .pack-cap{
-  left:0;right:0;height:calc(var(--foil-join-depth) * 2);
+  left:var(--foil-seal-inset);right:var(--foil-seal-inset);height:calc(var(--foil-join-depth) * 2);
   transform-origin:50% 0;
   background:linear-gradient(var(--pk-side1),var(--pk-side2));
 }
@@ -518,8 +525,8 @@ h1,h2,h3,p{margin:0}
 .pack-cap-bottom{top:98.8%;transform:translateZ(var(--foil-join-depth)) rotateX(-90deg)}
 .pack.opening .pack-sealed-edge,.pack.teared .pack-sealed-edge{visibility:hidden}
 .pack-strip{
-  position:absolute;left:0;right:0;top:0;height:40px;
-  transform:translate3d(0,0,7px);transform-origin:50% 100%;
+  position:absolute;left:var(--foil-seal-inset);right:var(--foil-seal-inset);top:0;height:var(--foil-mouth-top);
+  transform:translateZ(var(--foil-strip-depth));transform-origin:50% 100%;
   background:
     repeating-linear-gradient(90deg,rgba(255,255,255,.17) 0 1px,transparent 1px 3px,rgba(0,0,0,.08) 3px 4px),
     linear-gradient(180deg,var(--pk-strip1),var(--pk-strip2) 55%,var(--pk-strip3));
@@ -545,7 +552,7 @@ h1,h2,h3,p{margin:0}
   font-size:10px;letter-spacing:1px;color:rgba(255,255,255,.76);
 }
 .pack-print{
-  position:absolute;inset:40px 0 26px;padding:14px 22px 10px;
+  position:absolute;inset:var(--foil-mouth-top) 0 26px;padding:14px 22px 10px;
   display:flex;flex-direction:column;align-items:center;
   pointer-events:none;
 }
@@ -572,8 +579,8 @@ h1,h2,h3,p{margin:0}
   font-size:9px;letter-spacing:.8px;color:rgba(255,255,255,.7);
 }
 .pack-mouth{
-  position:absolute;left:4px;right:4px;top:38px;height:10px;
-  transform:translateZ(6px);opacity:0;pointer-events:none;
+  position:absolute;left:var(--foil-seal-inset);right:var(--foil-seal-inset);top:var(--foil-mouth-top);height:10px;
+  transform:translateZ(calc(var(--foil-half-depth) + 1px));opacity:0;pointer-events:none;
   transition:opacity .2s;
 }
 .pack-mouth.open{opacity:1}
@@ -3148,25 +3155,27 @@ body::before{
 
   // Shared silhouette for both foil faces and the walls between them.
   const FOIL_EDGE = [
-    [0, 0], [0, 11], [1.5, 14], [.5, 50], [1.5, 88], [0, 98.8], [0, 100]
+    [3.2, 0], [3.2, 11], [4.3, 14], [3.15, 24], [1.2, 36], [.2, 47],
+    [0, 54], [.5, 66], [1.9, 77], [4.2, 88], [3.2, 92], [3.2, 98.8], [3.2, 100]
   ];
 
   function foilOutline(opened){
     const edge = opened ? FOIL_EDGE.slice(1) : FOIL_EDGE;
     const shoulders = edge.slice(1, -1);
+    const sealInset = FOIL_EDGE[0][0];
+    const toothX = i => (sealInset + i * (100 - 2 * sealInset) / 48).toFixed(2) + '% ';
     const points = [];
     if (opened){
-      const [, mouth] = edge[0];
-      points.push('0% ' + mouth + '%', '100% ' + mouth + '%');
-    }
-    else {
+      const [inset, mouth] = edge[0];
+      points.push(inset + '% ' + mouth + '%', (100 - inset) + '% ' + mouth + '%');
+    } else {
       for (let i = 0; i <= 48; i++){
-        points.push((i * 100 / 48).toFixed(2) + '% ' + (i % 2 ? 1.2 : 0) + '%');
+        points.push(toothX(i) + (i % 2 ? 1.2 : 0) + '%');
       }
     }
     for (const [x, y] of shoulders) points.push((100 - x) + '% ' + y + '%');
     for (let i = 48; i >= 0; i--){
-      points.push((i * 100 / 48).toFixed(2) + '% ' + (i % 2 ? 98.8 : 100) + '%');
+      points.push(toothX(i) + (i % 2 ? 98.8 : 100) + '%');
     }
     for (const [x, y] of shoulders.reverse()) points.push(x + '% ' + y + '%');
     return 'polygon(' + points.join(',') + ')';
@@ -3175,6 +3184,8 @@ body::before{
   function mountFoilShell(pack){
     pack.style.setProperty('--foil-outline', foilOutline(false));
     pack.style.setProperty('--foil-open-outline', foilOutline(true));
+    pack.style.setProperty('--foil-seal-inset', FOIL_EDGE[0][0] + '%');
+    pack.style.setProperty('--foil-mouth-top', FOIL_EDGE[1][1] + '%');
 
     const [width, height] = getComputedStyle(pack).aspectRatio.split('/').map(Number);
     const walls = document.createDocumentFragment();
@@ -3231,7 +3242,7 @@ body::before{
       ? 'transform .32s cubic-bezier(.22,1,.36,1), opacity .2s'
       : 'none';
     strip.style.transform = 'translate3d(' + (dir * p * 118).toFixed(2) + '%,' +
-      (-p * 16).toFixed(2) + 'px,7px) rotateZ(' + (dir * p * 12).toFixed(2) + 'deg)';
+      (-p * 16).toFixed(2) + 'px,var(--foil-strip-depth)) rotateZ(' + (dir * p * 12).toFixed(2) + 'deg)';
     strip.style.opacity = p > .97 ? '0' : '1';
 
     const svg = $('#tearSvg');
